@@ -6,7 +6,7 @@ import os
 import random
 
 #训练最大轮次
-num_epochs = 300
+num_epochs = 40
 
 #初始化学习速率
 INITIAL_LEARNING_RATE = 1e-3
@@ -18,13 +18,15 @@ MOMENTUM = 0.9
 REPORT_STEPS = 5000
 
 #训练集的数量
-BATCH_SIZE = 50
-TRAIN_SIZE = 7368
+BATCH_SIZE = 256
+TRAIN_SIZE = 76800
 BATCHES = TRAIN_SIZE//BATCH_SIZE
 test_num = 3
 
-ti = 'train'         #训练集位置
-vi = 'valid'         #验证集位置
+#ti = 'train'         #训练集位置
+#vi = 'valid'         #验证集位置
+ti = '/ssd/wfei/data/CRNN_training/20181206_crnn_data_train_v1.7'         #训练集位置
+vi = '/ssd/wfei/data/CRNN_training/20181206_crnn_data_train_v1.7'         #验证集位置
 img_size = [94, 24]
 tl = None
 vl = None

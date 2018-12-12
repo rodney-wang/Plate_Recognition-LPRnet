@@ -80,7 +80,7 @@ def batch_rename_copy(filename, tgt_folder):
 
 
 
-tgt_folder = '/ssd/wfei/data/CRNN_training/20181206_crnn_data_v1.7'
+tgt_folder = '/ssd/wfei/data/CRNN_training/20181206_crnn_data_train_v1.7'
 batch_rename_copy(train_csv, tgt_folder)
 
 
