@@ -5,6 +5,7 @@ import os
 import csv
 
 train_csv = "/Users/fei/tmp/wanda_plates_1105/20181105_plates_crnn_training_100k.txt"
+train_csv = "/ssd/zq/parkinglot_pipeline/carplate/data/20181206_crnn_training_data_label_v1.7"
 
 CHARS = ['京', '沪', '津', '渝', '冀', '晋', '蒙', '辽', '吉', '黑',
          '苏', '浙', '皖', '闽', '赣', '鲁', '豫', '鄂', '湘', '粤',
@@ -43,39 +44,43 @@ def copy_file(src_path, tgt_path):
 
     if os.path.exists(tgt_path):
         return
-    cmd = "cp" + src_path + ' ' + tgt_path
-    os.system(cmd)
+    cmd = "cp " + src_path + ' ' + tgt_path
+    try:
+        os.system(cmd.decode('utf-8'))
+    except:
+        print('### Special plate detected ###')
+        pass
 
 
 def batch_rename_copy(filename, tgt_folder):
     data = pd.read_csv(filename, sep=';', encoding='utf8', error_bad_lines=False, header=None,
                        names=['path', 'transcription'], escapechar='\\')
 
-    #if not os.path.exists(tgt_folder):
-    #    os.makedirs(tgt_folder)
+    if not os.path.exists(tgt_folder):
+        os.makedirs(tgt_folder)
 
     # store the number of counts of each plate
     plate_count ={}
     for index, row in data.iterrows():
-        if index > 10:
-            break
+        if index < 6085:
+           continue 
         plate_path = row.path
         plate_chars = row.transcription.split('|')
         pid = convert_chars(plate_chars)
-        print plate_chars, pid
+        #print plate_chars, pid
         if pid not in plate_count:
             plate_count[pid] = 0
         else:
             plate_count[pid] += 1
 
         tgt_name = pid + '_' + str(plate_count[pid]).zfill(3) + '.jpg'
-        print tgt_name
+        print index, tgt_name
 
-        #copy_file(plate_path, os.path.join(tgt_folder, tgt_name))
+        copy_file(plate_path, os.path.join(tgt_folder, tgt_name))
 
 
 
-tgt_folder = '/ssd/wfei/data/CRNN_training/2018'
+tgt_folder = '/ssd/wfei/data/CRNN_training/20181206_crnn_data_v1.7'
 batch_rename_copy(train_csv, tgt_folder)
 
 

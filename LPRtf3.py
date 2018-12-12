@@ -356,7 +356,7 @@ def train(a):
         for idx, number in enumerate(original_list):
             detect_number = detected_list[idx]
             hit = (number == detect_number)
-            print(hit, number, "(", len(number), ") <-------> ", detect_number, "(", len(detect_number), ")")
+            #print(hit, number, "(", len(number), ") <-------> ", detect_number, "(", len(detect_number), ")")
             if hit:
                 true_numer = true_numer + 1
         print("Test Accuracy:", true_numer * 1.0 / len(original_list))
