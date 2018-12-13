@@ -18,20 +18,30 @@ num_channels = 3
 label_len = 7
 
 
-
 def batch_test(img_dir, label_file):
 
     logits, inputs, targets, seq_len = get_train_model(num_channels, label_len, BATCH_SIZE, img_size)
     logits = tf.transpose(logits, (1, 0, 2))
     # tragets是一个稀疏矩阵
     decoded, log_prob = tf.nn.ctc_beam_search_decoder(logits, seq_len, merge_repeated=False)
+    # tragets是一个稀疏矩阵
+    loss = tf.nn.ctc_loss(labels=targets, inputs=logits, sequence_length=seq_len)
+    cost = tf.reduce_mean(loss)
+
+    # optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate,momentum=MOMENTUM).minimize(cost, global_step=global_step)
+    #optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss, global_step=global_step)
+
+    # 前面说的划分块之后找每块的类属概率分布，ctc_beam_search_decoder方法,是每次找最大的K个概率分布
+    # 还有一种贪心策略是只找概率最大那个，也就是K=1的情况ctc_ greedy_decoder
+    decoded, log_prob = tf.nn.ctc_beam_search_decoder(logits, seq_len, merge_repeated=False)
+    acc = tf.reduce_mean(tf.edit_distance(tf.cast(decoded[0], tf.int32), targets))
 
     init = tf.global_variables_initializer()
 
     with tf.Session() as session:
         session.run(init)
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
-        saver.restore(session, './mode/LPRtf3.ckpt-42000')
+        saver.restore(session, './model/LPRtf3.ckpt-42000')
         test_gen = TextImageGeneratorBM(img_dir=img_dir,
                                       label_file=label_file,
                                       batch_size=BATCH_SIZE,

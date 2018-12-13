@@ -448,8 +448,8 @@ def train(a):
                 print(log.format(curr_epoch + 1, num_epochs, steps, train_cost, train_ler, val_cs/test_num, val_ls/test_num,
                                  time.time() - start, lr))
         if a =='test':
-            testi='valid'
-            saver.restore(session, './model8.24best/LPRtf3.ckpt-25000')
+            testi='/ssd/wfei/data/CRNN_training/20181206_crnn_data_val_v1.7' 
+            saver.restore(session, './model/LPRtf3.ckpt-42000')
             test_gen = TextImageGenerator(img_dir=testi,
                                            label_file=None,
                                            batch_size=BATCH_SIZE,
