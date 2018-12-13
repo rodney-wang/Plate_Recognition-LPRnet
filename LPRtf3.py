@@ -3,10 +3,11 @@ import numpy as np
 import time
 import cv2
 import os
+import re
 import random
 
 #训练最大轮次
-num_epochs = 40
+num_epochs = 140
 
 #初始化学习速率
 INITIAL_LEARNING_RATE = 1e-3
@@ -15,7 +16,7 @@ LEARNING_RATE_DECAY_FACTOR = 0.9  # The learning rate decay factor
 MOMENTUM = 0.9
 
 #输出字符串结果的步长间隔
-REPORT_STEPS = 5000
+REPORT_STEPS = 3000
 
 #训练集的数量
 BATCH_SIZE = 256
@@ -83,11 +84,13 @@ class TextImageGenerator:
         self.labels = []
         fs = os.listdir(self._img_dir)
         for filename in fs:
+            if filename[-4:] == '.jpg':
                 self.filenames.append(filename)
         for filename in self.filenames:
             if '\u4e00' <= filename[0]<= '\u9fff':
                 label = filename[:7]
             else:
+                print(filename)
                 label = dict[filename[:3]] + filename[4:10]
             label = encode_label(label)
             self.labels.append(label)
@@ -413,7 +416,12 @@ def train(a):
         session.run(init)
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
         if a=='train':
-            for curr_epoch in range(num_epochs):
+             start_epoch = 0
+             checkpoint = './model/LPRtf3.ckpt-10000'
+             saver.restore(session, checkpoint)
+             checkpoint_id = 10000 
+             start_epoch = checkpoint_id // BATCHES 
+             for curr_epoch in range(start_epoch, num_epochs):
                 print("Epoch.......", curr_epoch)
                 train_cost = train_ler = 0
                 for batch in range(BATCHES):
