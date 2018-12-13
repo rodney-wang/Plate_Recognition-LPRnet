@@ -2,7 +2,8 @@
 # -*- coding: UTF-8 -*-
 import pandas as pd
 import os
-import csv
+import glob
+import json
 
 train_csv = "/Users/fei/tmp/wanda_plates_1105/20181105_plates_crnn_training_100k.txt"
 train_csv = "/ssd/zq/parkinglot_pipeline/carplate/data/20181206_crnn_training_data_label_v1.7"
@@ -79,8 +80,41 @@ def batch_rename_copy(filename, tgt_folder):
         copy_file(plate_path, os.path.join(tgt_folder, tgt_name))
 
 
+def batch_benchmark_rename_copy(json_file, src_folder, tgt_folder):
+    plate_label = json.load(open(json_file))
+
+    if not os.path.exists(tgt_folder):
+        os.makedirs(tgt_folder)
+
+    input_images= glob.glob(src_folder + '/*.png')
+    plate_count = {}
+    for index, image_name in enumerate(input_images):
+        print(image_name)
+
+        plate_path = image_name
+        bname = os.path.basename(plate_path).split('_plate.png')
+
+        #plate_chars = plate_label
+        pid = plate_label[bname]
+        #print plate_chars, pid
+        if pid not in plate_count:
+            plate_count[pid] = 0
+        else:
+            plate_count[pid] += 1
+
+        tgt_name = pid + '_' + str(plate_count[pid]).zfill(3) + '.png'
+        print index, tgt_name
+
+        copy_file(plate_path, os.path.join(tgt_folder, tgt_name))
+
 
 tgt_folder = '/ssd/wfei/data/CRNN_training/20181206_crnn_data_train_v1.7'
-batch_rename_copy(train_csv, tgt_folder)
+#batch_rename_copy(train_csv, tgt_folder)
+
+json_file = '/ssd/wfei/data/testing_data/wanda_benchmark_label.json'
+src_dir  ='/ssd/wfei/data/testing_data/wanda_plates_v1.2'
+tgt_dir = '/ssd/wfei/data/testing_data/wanda_plates_v1.2_with_label'
+
+batch_benchmark_rename_copy(json_file, src_dir, tgt_dir)
 
 
