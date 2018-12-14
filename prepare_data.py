@@ -33,6 +33,10 @@ print(chi_str_dict)
 def convert_chars(plate_chars):
     res=[]
     for char in plate_chars:
+        if char == 'I':
+            char = '1'
+        if char == 'O':
+            char = '0'
         if char is not u'':
             if char in chi_str_dict:
                 res.append(chi_str_dict[char])
@@ -92,10 +96,11 @@ def batch_benchmark_rename_copy(json_file, src_folder, tgt_folder):
         print(image_name)
 
         plate_path = image_name
-        bname = os.path.basename(plate_path).split('_plate.png')
-
+        bname = os.path.basename(plate_path).split('_plate.png')[0]
+    
         #plate_chars = plate_label
-        pid = plate_label[bname]
+        label = plate_label[bname]
+        pid = convert_chars(list(label))
         #print plate_chars, pid
         if pid not in plate_count:
             plate_count[pid] = 0

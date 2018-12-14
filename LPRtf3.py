@@ -84,7 +84,7 @@ class TextImageGenerator:
         self.labels = []
         fs = os.listdir(self._img_dir)
         for filename in fs:
-            if filename[-4:] == '.jpg':
+            if filename[-4:] == '.jpg' or filename[-4:] == '.png':
                 self.filenames.append(filename)
         for filename in self.filenames:
             if '\u4e00' <= filename[0]<= '\u9fff':
@@ -448,15 +448,15 @@ def train(a):
                 print(log.format(curr_epoch + 1, num_epochs, steps, train_cost, train_ler, val_cs/test_num, val_ls/test_num,
                                  time.time() - start, lr))
         if a =='test':
-            testi='/ssd/wfei/data/CRNN_training/20181206_crnn_data_val_v1.7' 
-            saver.restore(session, './model/LPRtf3.ckpt-42000')
+            testi='/ssd/wfei/data/testing_data/wanda_plates_v1.2_with_label'
+            saver.restore(session, './model/LPRtf3.ckpt-33000')
             test_gen = TextImageGenerator(img_dir=testi,
                                            label_file=None,
                                            batch_size=BATCH_SIZE,
                                            img_size=img_size,
                                            num_channels=num_channels,
                                            label_len=label_len)
-            do_report(test_gen,3)
+            do_report(test_gen,4)
 
 
 if __name__ == "__main__":
