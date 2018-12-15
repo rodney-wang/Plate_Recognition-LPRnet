@@ -7,15 +7,70 @@ import cv2
 import glob
 import tensorflow as tf
 import time
-from LPRtf3 import get_train_model
+from model import get_train_model
 from TextImageGeneratorBM import TextImageGeneratorBM, report_accuracy
 
-#/ssd/zq/parkinglot_pipeline/carplate/test_data/image_data
+from config import BATCH_SIZE, img_size, num_channels, label_len
+import pdb
 
-BATCH_SIZE = 256
-img_size = [94, 24]
-num_channels = 3
-label_len = 7
+def get_images(input_path):
+    '''
+    find image files in test data path
+    :return: list of files found
+    '''
+    files = []
+    exts = ['jpg', 'png', 'jpeg', 'JPG']
+    for parent, dirnames, filenames in os.walk(input_path):
+        for filename in filenames:
+            for ext in exts:
+                if filename.endswith(ext):
+                    files.append(os.path.join(parent, filename))
+                    break
+    print('Find {} images'.format(len(files)))
+    return files
+
+def resize_image(img):
+    '''
+    resize image to a fixed size []
+    :param im: the resized image
+    :param max_side_len: limit of max image size to avoid out of memory in gpu
+    :return: the resized image and the resize ratio
+    '''
+    _img_w, _img_h = img_size
+    img = cv2.resize(img, (_img_w, _img_h), interpolation=cv2.INTER_CUBIC)
+    return img
+
+
+
+def main(img_dir):
+    files = get_images(img_dir)
+    img = cv2.imread(files[1])
+    img = resize_image(img)
+
+    images = img[np.newaxis, :]
+    images = np.transpose(images, axes=[0, 2, 1, 3])
+
+    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len, 1, img_size)
+    logits = tf.transpose(logits, (1, 0, 2))
+
+    decoded, log_prob = tf.nn.ctc_beam_search_decoder(logits, seq_len, merge_repeated=False)
+
+    saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
+
+    with tf.Session() as session:
+        session.run(tf.global_variables_initializer())
+        ckpt_state = tf.train.get_checkpoint_state('./model/LPRtf3.ckpt-42000')
+
+        saver.restore(session, './model/LPRtf3.ckpt-42000')
+
+        #test_inputs, test_targets, test_seq_len = test_gen.next_batch()
+        test_feed = {inputs: images,
+                     seq_len: 24}
+        st = time.time()
+        dd = session.run(decoded[0], test_feed)
+        pdb.set_trace()
+
+
 
 
 def batch_test(img_dir, label_file):
@@ -91,5 +146,6 @@ if __name__ == '__main__':
     args = parse_args()
 
     #run_lpr(args.img_dir, args.out_dir)
-    batch_test(args.img_dir, args.label_file)
-
+    #batch_test(args.img_dir, args.label_file)
+    img_path = '/Users/fei/data/parking/carplate/testing_data/wanda_benchmark/wanda_plates_v1.2'
+    main(args.img_dir)
