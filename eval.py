@@ -49,20 +49,21 @@ def main(img_dir):
 
     images = img[np.newaxis, :]
     images = np.transpose(images, axes=[0, 2, 1, 3])
-
+    
+    global_step = tf.Variable(0, trainable=False)
     logits, inputs, targets, seq_len = get_train_model(num_channels, label_len, 1, img_size)
     logits = tf.transpose(logits, (1, 0, 2))
 
     decoded, log_prob = tf.nn.ctc_beam_search_decoder(logits, seq_len, merge_repeated=False)
 
-    saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
-
-    with tf.Session() as session:
+    saver = tf.train.Saver()
+    config = tf.ConfigProto(device_count = {'GPU': 1})
+    with tf.Session(config=config) as session:
         session.run(tf.global_variables_initializer())
-        ckpt_state = tf.train.get_checkpoint_state('./model/LPRtf3.ckpt-42000')
+        #ckpt_state = tf.train.get_checkpoint_state('./model/LPRtf3.ckpt-42000')
 
         saver.restore(session, './model/LPRtf3.ckpt-42000')
-
+        print('model/LPRtf3.ckpt-42000 loaded!!!!')
         #test_inputs, test_targets, test_seq_len = test_gen.next_batch()
         test_feed = {inputs: images,
                      seq_len: 24}
