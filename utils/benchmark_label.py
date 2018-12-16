@@ -99,11 +99,9 @@ if __name__ == '__main__':
     out_dir  ='/Users/fei/data/parking/carplate/testing_data/wanda_benchmark/'
 
     args = parse_args()
-    #write_plate_label_to_json(img_path, out_dir)
-
-    #main(args.img_dir, args.corner_json, args.model, args.out_dir)
+    write_plate_label_to_json(img_path, out_dir)
     #write_plate_image(img_path, json_path_corner, out_dir)
 
     img_path ='/Users/fei/data/parking/carplate/testing_data/k11_benchmark/car_crop'
     out_dir = '/Users/fei/data/parking/carplate/testing_data/k11_benchmark/'
-    write_plate_label_to_json(img_path, out_dir)
+    #write_plate_label_to_json(img_path, out_dir)

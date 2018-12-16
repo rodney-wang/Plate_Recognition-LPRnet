@@ -42,7 +42,6 @@ class TextImageGeneratorBM:
         self.labels = []
 
         self.init()
-        aa = 1
 
 
     def init(self):
@@ -61,7 +60,7 @@ class TextImageGeneratorBM:
                 #    label = filename[:7]
                 if len(chars) >=7:
                     self.filenames.append(filename)
-                    print(filename, chars)
+                    #print(filename, chars)
                     label = encode_label(chars[:7])
 
                     self.labels.append(label)
@@ -81,12 +80,16 @@ class TextImageGeneratorBM:
         end = self._next_index + batch_size
         if end > self._num_examples:
             self._next_index = 0
-            start = self._next_index
-            end = self._next_index + batch_size
+            #start = self._next_index
+            #end = self._next_index + batch_size
+            start = self._num_examples - batch_size
+            end = self._num_examples
             self._num_epoches += 1
         else:
             self._next_index = end
         images = np.zeros([batch_size, self._img_h, self._img_w, self._num_channels])
+        #images = np.zeros([end-start, self._img_h, self._img_w, self._num_channels])
+
         # labels = np.zeros([batch_size, self._label_len])
 
         for j, i in enumerate(range(start, end)):
@@ -101,7 +104,7 @@ class TextImageGeneratorBM:
         # input_length = np.zeros([batch_size, 1])
 
         seq_len = np.ones(self._batch_size) * 24
-        return images, sparse_labels, seq_len
+        return images, sparse_labels, seq_len, self._filenames[start:end]
 
 def sparse_tuple_from(sequences, dtype=np.int32):
     """
@@ -162,20 +165,51 @@ def encode_label(s):
 
 
 
-def report_accuracy(decoded_list, test_targets):
+def report_accuracy(decoded_list, test_targets, scores):
     original_list = decode_sparse_tensor(test_targets)
     detected_list = decode_sparse_tensor(decoded_list)
     true_numer = 0
 
     if len(original_list) != len(detected_list):
         print("len(original_list)", len(original_list), "len(detected_list)", len(detected_list),
-              " test and detect length desn't match")
+              " test and detect length doesn't match")
         return
     print("T/F: original(length) <-------> detectcted(length)")
     for idx, number in enumerate(original_list):
         detect_number = detected_list[idx]
         hit = (number == detect_number)
-        #print(hit, number, "(", len(number), ") <-------> ", detect_number, "(", len(detect_number), ")")
+        gt = ''.join(number).decode('utf-8')
+        detect = ''.join(detect_number).decode('utf-8')
+        if not hit:
+            print hit, gt, "(", len(number), ") <-------> ", detect, "(", len(detect_number), ")", 100*scores[idx][0]
         if hit:
             true_numer = true_numer + 1
     print("Test Accuracy:", true_numer * 1.0 / len(original_list))
+
+    return detected_list
+
+def write_ocr(detected_list, scores, filenames, out_dir):
+    """
+    Write output to the individual files so that precision and recall numbers can be evaluated
+    :param detected_list:
+    :param filenames:
+    :param out_dir:
+    :return:
+    """
+    assert(len(detected_list) == len(scores))
+    assert(len(detected_list) == len(filenames))
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+
+    for idx, number in enumerate(detected_list):
+        detect_number = detected_list[idx]
+        detect = ''.join(detect_number)
+        score = scores[idx][0] * 100.0
+        fname = filenames[idx].split('_plate.png')[0]
+        fname = fname.replace('.jpg', '.txt')
+        fpath = os.path.join(out_dir, fname)
+
+        out_str = ' '.join([detect, str(score)])
+        with open(fpath, 'w') as f:
+            f.write(out_str)
+        #print fname, out_str

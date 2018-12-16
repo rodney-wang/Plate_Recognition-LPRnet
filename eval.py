@@ -8,7 +8,7 @@ import glob
 import tensorflow as tf
 import time
 from model import get_train_model
-from TextImageGeneratorBM import TextImageGeneratorBM, report_accuracy
+from TextImageGeneratorBM import TextImageGeneratorBM, report_accuracy, write_ocr
 
 from config import BATCH_SIZE, img_size, num_channels, label_len
 import pdb
@@ -73,13 +73,13 @@ def main(img_dir):
 
 
 
-def batch_eval(img_dir, label_file):
+def batch_eval(img_dir, label_file, out_dir):
 
     global_step = tf.Variable(0, trainable=False)
     logits, inputs, targets, seq_len = get_train_model(num_channels, label_len, BATCH_SIZE, img_size)
     logits = tf.transpose(logits, (1, 0, 2))
     # tragets是一个稀疏矩阵
-    decoded, log_prob = tf.nn.ctc_beam_search_decoder(logits, seq_len, merge_repeated=False)
+    #decoded, log_prob = tf.nn.ctc_beam_search_decoder(logits, seq_len, merge_repeated=False)
     # tragets是一个稀疏矩阵
     loss = tf.nn.ctc_loss(labels=targets, inputs=logits, sequence_length=seq_len)
     cost = tf.reduce_mean(loss)
@@ -102,15 +102,17 @@ def batch_eval(img_dir, label_file):
                                       label_len=label_len)
         #do_report(test_gen, 3)
         for i in range(4):
-            test_inputs, test_targets, test_seq_len = test_gen.next_batch()
+            test_inputs, test_targets, test_seq_len, img_names = test_gen.next_batch()
             test_feed = {inputs: test_inputs,
                          targets: test_targets,
                          seq_len: test_seq_len}
             st = time.time()
-            dd = session.run(decoded[0], test_feed)
+            [dd, scores] = session.run([decoded[0], log_prob], test_feed)
             tim = time.time() - st
             print('time:%s' % tim)
-            report_accuracy(dd, test_targets)
+            #print(scores)
+            detected_list = report_accuracy(dd, test_targets, scores)
+            write_ocr(detected_list, scores, img_names, out_dir)
 
 
 
@@ -136,6 +138,7 @@ if __name__ == '__main__':
     #batch_test(args.img_dir, args.label_file)
     img_dir = '/Users/fei/data/parking/carplate/testing_data/wanda_benchmark/wanda_plates_v1.2'
     label_file = '/Users/fei/data/parking/carplate/testing_data/wanda_benchmark/wanda_benchmark_label.json'
+    out_dir = '/Users/fei/data/parking/carplate/testing_data/wanda_benchmark/ocr_results_v1.2'
     #main(args.img_dir)
     #main(img_dir)
-    batch_eval(img_dir, label_file)
+    batch_eval(img_dir, label_file, out_dir)
