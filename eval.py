@@ -141,5 +141,5 @@ if __name__ == '__main__':
     out_dir = '/Users/fei/data/parking/carplate/testing_data/wanda_benchmark/ocr_results_v1.2'
     #main(args.img_dir)
     #main(img_dir)
-    #batch_eval(args.img_dir, args.label_file, args.out_dir)
-    batch_eval(img_dir, label_file, out_dir)
+    batch_eval(args.img_dir, args.label_file, args.out_dir)
+    #batch_eval(img_dir, label_file, out_dir)

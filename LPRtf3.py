@@ -7,7 +7,7 @@ import re
 import random
 
 #训练最大轮次
-num_epochs = 140
+num_epochs = 240
 
 #初始化学习速率
 INITIAL_LEARNING_RATE = 1e-3
@@ -417,9 +417,9 @@ def train(a):
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
         if a=='train':
              start_epoch = 0
-             checkpoint = './model/LPRtf3.ckpt-10000'
+             checkpoint = './model/LPRtf3.ckpt-42000'
              saver.restore(session, checkpoint)
-             checkpoint_id = 10000 
+             checkpoint_id = 42000 
              start_epoch = checkpoint_id // BATCHES 
              for curr_epoch in range(start_epoch, num_epochs):
                 print("Epoch.......", curr_epoch)
@@ -449,7 +449,7 @@ def train(a):
                                  time.time() - start, lr))
         if a =='test':
             testi='/ssd/wfei/data/testing_data/wanda_plates_v1.2_with_label'
-            saver.restore(session, './model/LPRtf3.ckpt-33000')
+            saver.restore(session, './model/LPRtf3.ckpt-42000')
             test_gen = TextImageGenerator(img_dir=testi,
                                            label_file=None,
                                            batch_size=BATCH_SIZE,

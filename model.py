@@ -66,7 +66,7 @@ def get_train_model(num_channels, label_len, b, img_size):
 
     x = conv(x, 256, 256, ksize=[4, 1])
     x = tf.layers.dropout(x)
-    x = tf.layers.batch_normalization(x, training=is_training)
+    x = tf.layers.batch_normalization(x)
     x = tf.nn.relu(x)
 
 
