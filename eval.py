@@ -10,7 +10,7 @@ import time
 from model import get_train_model
 from TextImageGeneratorBM import TextImageGeneratorBM, report_accuracy, write_ocr
 
-from config import BATCH_SIZE, img_size, num_channels, label_len
+from config_new import BATCH_SIZE, img_size, num_channels, label_len
 import pdb
 
 def get_images(input_path):
@@ -60,7 +60,7 @@ def main(img_dir):
     config = tf.ConfigProto(device_count = {'GPU': 1})
     with tf.Session(config=config) as session:
         session.run(tf.global_variables_initializer())
-        saver.restore(session, './model/LPRtf3.ckpt-42000')
+        saver.restore(session, './model69/LPRtf3.ckpt-51000')
         print('model/LPRtf3.ckpt-42000 loaded!!!!')
         #test_inputs, test_targets, test_seq_len = test_gen.next_batch()
         test_feed = {inputs: images,
@@ -92,7 +92,7 @@ def batch_eval(img_dir, label_file, out_dir):
     with tf.Session() as session:
         session.run(init)
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
-        saver.restore(session, './model/LPRtf3.ckpt-42000')
+        saver.restore(session, './model69/LPRtf3.ckpt-51000')
 
         test_gen = TextImageGeneratorBM(img_dir=img_dir,
                                       label_file=label_file,
@@ -141,4 +141,4 @@ if __name__ == '__main__':
     out_dir = '/Users/fei/data/parking/carplate/testing_data/wanda_benchmark/ocr_results_v1.2'
     #main(args.img_dir)
     #main(img_dir)
-    batch_eval(img_dir, label_file, out_dir)
+    batch_eval(args.img_dir, args.label_file, args.out_dir)
