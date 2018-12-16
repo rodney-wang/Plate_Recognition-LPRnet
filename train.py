@@ -9,7 +9,7 @@ from model import get_train_model
 from config_new import CHARS, dict, CHARS_DICT, NUM_CHARS
 
 #训练最大轮次
-num_epochs = 400
+num_epochs = 160
 
 #初始化学习速率
 INITIAL_LEARNING_RATE = 1e-3
@@ -175,18 +175,21 @@ def train(a):
                                  num_channels=num_channels,
                                  label_len=label_len)
     global_step = tf.Variable(0, trainable=False)
+    #is_training = tf.placeholder(tf.bool, name='is_training')
+
     learning_rate = tf.train.exponential_decay(INITIAL_LEARNING_RATE,
                                                global_step,
                                                DECAY_STEPS,
                                                LEARNING_RATE_DECAY_FACTOR,
                                                staircase=True)
-    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len,BATCH_SIZE, img_size, True)
+    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len,BATCH_SIZE, img_size)
     logits = tf.transpose(logits, (1, 0, 2))
     # tragets是一个稀疏矩阵
     loss = tf.nn.ctc_loss(labels=targets, inputs=logits, sequence_length=seq_len)
     cost = tf.reduce_mean(loss)
 
     # optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate,momentum=MOMENTUM).minimize(cost, global_step=global_step)
+
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss, global_step=global_step)
 
     # 前面说的划分块之后找每块的类属概率分布，ctc_beam_search_decoder方法,是每次找最大的K个概率分布
@@ -296,18 +299,7 @@ def train(a):
                 log = "Epoch {}/{}, steps = {}, train_cost = {:.3f}, train_ler = {:.3f}, val_cost = {:.3f}, val_ler = {:.3f}, time = {:.3f}s, learning_rate = {}"
                 print(log.format(curr_epoch + 1, num_epochs, steps, train_cost, train_ler, val_cs/test_num, val_ls/test_num,
                                  time.time() - start, lr))
-        if a =='test':
-            testi='/ssd/wfei/data/testing_data/wanda_plates_v1.2_with_label'
-            saver.restore(session, './model69/LPRtf3.ckpt-51000')
-            test_gen = TextImageGenerator(img_dir=testi,
-                                           label_file=None,
-                                           batch_size=BATCH_SIZE,
-                                           img_size=img_size,
-                                           num_channels=num_channels,
-                                           label_len=label_len)
-            do_report(test_gen,4)
-
 
 if __name__ == "__main__":
-        a = input('train or test:')
+        a = "train"
         train(a)

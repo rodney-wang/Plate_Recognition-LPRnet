@@ -22,7 +22,7 @@ def conv(x,im,om,ksize,stride=[1,1,1,1],pad = 'SAME'):
     relu = tf.nn.bias_add(out, conv_biases)
     return relu
 
-def get_train_model(num_channels, label_len, b, img_size, is_training=False):
+def get_train_model(num_channels, label_len, b, img_size):
     inputs = tf.placeholder(
         tf.float32,
         shape=(b, img_size[0], img_size[1], num_channels))
@@ -35,7 +35,7 @@ def get_train_model(num_channels, label_len, b, img_size, is_training=False):
     x = inputs
 
     x = conv(x,num_channels,64,ksize=[3,3])
-    x = tf.layers.batch_normalization(x, training=is_training)
+    x = tf.layers.batch_normalization(x)
     x = tf.nn.relu(x)
     x = tf.nn.max_pool(x,
                           ksize=[1, 3, 3, 1],
@@ -43,7 +43,7 @@ def get_train_model(num_channels, label_len, b, img_size, is_training=False):
                           padding='SAME')
     x = small_basic_block(x,64,64)
     x2=x
-    x = tf.layers.batch_normalization(x, training=is_training)
+    x = tf.layers.batch_normalization(x)
     x = tf.nn.relu(x)
 
     x = tf.nn.max_pool(x,
@@ -51,11 +51,11 @@ def get_train_model(num_channels, label_len, b, img_size, is_training=False):
                           strides=[1, 2, 1, 1],
                           padding='SAME')
     x = small_basic_block(x, 64,256)
-    x = tf.layers.batch_normalization(x, training=is_training)
+    x = tf.layers.batch_normalization(x)
     x = tf.nn.relu(x)
     x = small_basic_block(x, 256, 256)
     x3 = x
-    x = tf.layers.batch_normalization(x, training=is_training)
+    x = tf.layers.batch_normalization(x)
 
     x = tf.nn.relu(x)
     x = tf.nn.max_pool(x,
