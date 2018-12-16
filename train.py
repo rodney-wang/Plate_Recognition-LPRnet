@@ -296,8 +296,18 @@ def train(a):
                 log = "Epoch {}/{}, steps = {}, train_cost = {:.3f}, train_ler = {:.3f}, val_cost = {:.3f}, val_ler = {:.3f}, time = {:.3f}s, learning_rate = {}"
                 print(log.format(curr_epoch + 1, num_epochs, steps, train_cost, train_ler, val_cs/test_num, val_ls/test_num,
                                  time.time() - start, lr))
+        if a =='test':
+            testi='/ssd/wfei/data/testing_data/wanda_plates_v1.2_with_label'
+            saver.restore(session, './model69/LPRtf3.ckpt-51000')
+            test_gen = TextImageGenerator(img_dir=testi,
+                                           label_file=None,
+                                           batch_size=BATCH_SIZE,
+                                           img_size=img_size,
+                                           num_channels=num_channels,
+                                           label_len=label_len)
+            do_report(test_gen,4)
 
 
 if __name__ == "__main__":
-        a = "train"
+        a = input('train or test:')
         train(a)

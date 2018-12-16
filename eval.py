@@ -10,7 +10,7 @@ import time
 from model import get_train_model
 from TextImageGeneratorBM import TextImageGeneratorBM, report_accuracy, write_ocr
 
-from config_new import BATCH_SIZE, img_size, num_channels, label_len
+from config_new import BATCH_SIZE, img_size, num_channels, label_len, NUM_CHARS
 import pdb
 
 def get_images(input_path):
@@ -42,7 +42,7 @@ def resize_image(img):
 
 
 
-def main(img_dir):
+def main(img_dir, lpr_model):
     files = get_images(img_dir)
     img = cv2.imread(files[1])
     img = resize_image(img)
@@ -60,8 +60,8 @@ def main(img_dir):
     config = tf.ConfigProto(device_count = {'GPU': 1})
     with tf.Session(config=config) as session:
         session.run(tf.global_variables_initializer())
-        saver.restore(session, './model69/LPRtf3.ckpt-51000')
-        print('model/LPRtf3.ckpt-42000 loaded!!!!')
+        saver.restore(session, lpr_model)
+        print("{} loaded!!!".format(lpr_model))
         #test_inputs, test_targets, test_seq_len = test_gen.next_batch()
         test_feed = {inputs: images,
                      seq_len: 24}
@@ -141,4 +141,5 @@ if __name__ == '__main__':
     out_dir = '/Users/fei/data/parking/carplate/testing_data/wanda_benchmark/ocr_results_v1.2'
     #main(args.img_dir)
     #main(img_dir)
-    batch_eval(args.img_dir, args.label_file, args.out_dir)
+    #batch_eval(args.img_dir, args.label_file, args.out_dir)
+    batch_eval(img_dir, label_file, out_dir)
