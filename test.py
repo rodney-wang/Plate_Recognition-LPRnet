@@ -313,18 +313,8 @@ def get_train_model(num_channels, label_len, b, img_size):
 def train(a):
 
     global_step = tf.Variable(0, trainable=False)
-    #learning_rate = tf.train.exponential_decay(INITIAL_LEARNING_RATE,
-    #                                           global_step,
-    #                                           DECAY_STEPS,
-    #                                           LEARNING_RATE_DECAY_FACTOR,
-    #                                           staircase=True)
     logits, inputs, targets, seq_len = get_train_model(num_channels, label_len,BATCH_SIZE, img_size)
     logits = tf.transpose(logits, (1, 0, 2))
-    # tragets是一个稀疏矩阵
-    #loss = tf.nn.ctc_loss(labels=targets, inputs=logits, sequence_length=seq_len)
-    #cost = tf.reduce_mean(loss)
-
-    #optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss, global_step=global_step)
 
     # 前面说的划分块之后找每块的类属概率分布，ctc_beam_search_decoder方法,是每次找最大的K个概率分布
     # 还有一种贪心策略是只找概率最大那个，也就是K=1的情况ctc_ greedy_decoder

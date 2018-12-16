@@ -42,6 +42,8 @@ class TextImageGeneratorBM:
         self.labels = []
 
         self.init()
+        aa = 1
+
 
     def init(self):
         self.labels = []
@@ -49,15 +51,19 @@ class TextImageGeneratorBM:
         plate_label = json.load(open(self._label_file))
 
         for filename in fs:
-            if filename[-4:] == '.png':
+            if filename.endswith('.png') or filename.endswith('.jpg'):
                 bname = filename.split('_plate.png')[0]
-                chars = plate_label[bname]
+                if bname in plate_label:
+                    chars = plate_label[bname]
+                else:
+                    continue
                 #if '\u4e00' <= label[0] <= '\u9fff':
                 #    label = filename[:7]
                 if len(chars) >=7:
                     self.filenames.append(filename)
+                    print(filename, chars)
                     label = encode_label(chars[:7])
-                    print(label)
+
                     self.labels.append(label)
                     self._num_examples += 1
         self.labels = np.float32(self.labels)
@@ -147,7 +153,11 @@ def decode_a_seq(indexes, spars_tensor):
 def encode_label(s):
     label = np.zeros([len(s)])
     for i, c in enumerate(s):
-        label[i] = CHARS_DICT[c]
+        if c.encode('utf-8') in CHARS_DICT:
+            label[i] = CHARS_DICT[c.encode('utf-8')]
+        else:
+            label[i] = -1
+            print 'Label not in dict!!!', c, label
     return label
 
 

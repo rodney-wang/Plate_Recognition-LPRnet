@@ -60,22 +60,22 @@ def main(img_dir):
     config = tf.ConfigProto(device_count = {'GPU': 1})
     with tf.Session(config=config) as session:
         session.run(tf.global_variables_initializer())
-        #ckpt_state = tf.train.get_checkpoint_state('./model/LPRtf3.ckpt-42000')
-
         saver.restore(session, './model/LPRtf3.ckpt-42000')
         print('model/LPRtf3.ckpt-42000 loaded!!!!')
         #test_inputs, test_targets, test_seq_len = test_gen.next_batch()
         test_feed = {inputs: images,
                      seq_len: 24}
-        st = time.time()
-        dd = session.run(decoded[0], test_feed)
-        pdb.set_trace()
+        #st = time.time()
+        #dd = session.run(decoded[0], test_feed)
+        lg = session.run(logits, test_feed)
+
+        #pdb.set_trace()
 
 
 
+def batch_eval(img_dir, label_file):
 
-def batch_test(img_dir, label_file):
-
+    global_step = tf.Variable(0, trainable=False)
     logits, inputs, targets, seq_len = get_train_model(num_channels, label_len, BATCH_SIZE, img_size)
     logits = tf.transpose(logits, (1, 0, 2))
     # tragets是一个稀疏矩阵
@@ -84,11 +84,6 @@ def batch_test(img_dir, label_file):
     loss = tf.nn.ctc_loss(labels=targets, inputs=logits, sequence_length=seq_len)
     cost = tf.reduce_mean(loss)
 
-    # optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate,momentum=MOMENTUM).minimize(cost, global_step=global_step)
-    #optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss, global_step=global_step)
-
-    # 前面说的划分块之后找每块的类属概率分布，ctc_beam_search_decoder方法,是每次找最大的K个概率分布
-    # 还有一种贪心策略是只找概率最大那个，也就是K=1的情况ctc_ greedy_decoder
     decoded, log_prob = tf.nn.ctc_beam_search_decoder(logits, seq_len, merge_repeated=False)
     acc = tf.reduce_mean(tf.edit_distance(tf.cast(decoded[0], tf.int32), targets))
 
@@ -98,6 +93,7 @@ def batch_test(img_dir, label_file):
         session.run(init)
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
         saver.restore(session, './model/LPRtf3.ckpt-42000')
+
         test_gen = TextImageGeneratorBM(img_dir=img_dir,
                                       label_file=label_file,
                                       batch_size=BATCH_SIZE,
@@ -115,16 +111,6 @@ def batch_test(img_dir, label_file):
             tim = time.time() - st
             print('time:%s' % tim)
             report_accuracy(dd, test_targets)
-
-
-
-def run_lpr(img_dir, out_dir):
-    input_imgs = glob.glob(img_dir + '/*.jpg')
-
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
-    for i, image_name in enumerate(input_imgs):
-        print(i, image_name)
 
 
 
@@ -148,5 +134,8 @@ if __name__ == '__main__':
 
     #run_lpr(args.img_dir, args.out_dir)
     #batch_test(args.img_dir, args.label_file)
-    img_path = '/Users/fei/data/parking/carplate/testing_data/wanda_benchmark/wanda_plates_v1.2'
-    main(args.img_dir)
+    img_dir = '/Users/fei/data/parking/carplate/testing_data/wanda_benchmark/wanda_plates_v1.2'
+    label_file = '/Users/fei/data/parking/carplate/testing_data/wanda_benchmark/wanda_benchmark_label.json'
+    #main(args.img_dir)
+    #main(img_dir)
+    batch_eval(img_dir, label_file)
