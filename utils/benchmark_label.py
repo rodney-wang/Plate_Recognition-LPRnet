@@ -82,10 +82,8 @@ def parse_args():
                         type=str, help='Input test image dir')
     parser.add_argument('--corner_json', default='/ssd/zq/parkinglot_pipeline/carplate/test_data/corner_output_v1.2.json',
                         type=str, help='Corner detection results in json')
-    parser.add_argument('--out_dir', default='/ssd/wfei/results/benchmark/wanda/roi_cls_score',
+    parser.add_argument('--out_dir', default='/ssd/wfei/data/testing_data/wanda_plates_v1.2',
                         type=str, help='Output image dir')
-    parser.add_argument('--model', default='resnet18',
-                        type=str, help='character classification model')
 
     args = parser.parse_args()
     return args
@@ -97,11 +95,16 @@ if __name__ == '__main__':
     json_path_corner = '/Users/fei/data/parking/carplate/testing_data/wanda_benchmark/corner_output_v1.2.json'
     img_path ='/Users/fei/data/parking/carplate/testing_data/wanda_benchmark/car_crop'
     out_dir  ='/Users/fei/data/parking/carplate/testing_data/wanda_benchmark/'
+    img_path = '/Users/fei/data/parking/carplate/testing_data/k11_benchmark/car_crop'
+    out_dir = '/Users/fei/data/parking/carplate/testing_data/k11_benchmark/'
 
     args = parse_args()
-    write_plate_label_to_json(img_path, out_dir)
+    #write_plate_label_to_json(img_path, out_dir)
     #write_plate_image(img_path, json_path_corner, out_dir)
 
-    img_path ='/Users/fei/data/parking/carplate/testing_data/k11_benchmark/car_crop'
-    out_dir = '/Users/fei/data/parking/carplate/testing_data/k11_benchmark/'
+    # To run it on K11 data
+    #python benchmark_label.py --image_dir /ssd/zq/parkinglot_pipeline/carplate/test_data/image_data
+    # --corner_json /ssd/zq/parkinglot_pipeline/carplate/test_data_k11/corner_output_v1.2.json
+    # --out_dir /ssd/wfei/data/testing_data/k11_plates_v1.2
     #write_plate_label_to_json(img_path, out_dir)
+    write_plate_image(args.img_dir, args.corner_json, args.out_dir)
