@@ -4,9 +4,13 @@ import pandas as pd
 import os
 import glob
 import json
+from shutil import copyfile
 
 #train_csv = "/Users/fei/tmp/wanda_plates_1105/20181105_plates_crnn_training_100k.txt"
 train_csv = "/ssd/zq/parkinglot_pipeline/carplate/data/20181220_crnn_training_data_label_v1.8e"
+#train_csv = "/ssd/zq/parkinglot_pipeline/carplate/data/k11_plates_for_training_1219.txt"
+#train_csv = "/ssd/wfei/data/ocr_training/20181008_plate_and_label_filtered.txt"
+#train_csv = "/ssd/wfei/data/ocr_training/20181121_plate_and_label_filtered_crnn6.txt"
 
 CHARS = ['京', '沪', '津', '渝', '冀', '晋', '蒙', '辽', '吉', '黑',
          '苏', '浙', '皖', '闽', '赣', '鲁', '豫', '鄂', '湘', '粤',
@@ -50,8 +54,9 @@ def copy_file(src_path, tgt_path):
     if os.path.exists(tgt_path):
         return
     cmd = "cp " + src_path + ' ' + tgt_path
+    print cmd
     try:
-        os.system(cmd.decode('utf-8'))
+        copyfile(src_path, tgt_path) 
     except:
         print('### Special plate detected ###')
         pass
@@ -113,7 +118,7 @@ def batch_benchmark_rename_copy(json_file, src_folder, tgt_folder):
         copy_file(plate_path, os.path.join(tgt_folder, tgt_name))
 
 
-tgt_folder = '/ssd/wfei/data/CRNN_training/20181206_crnn_data_train_v1.7'
+tgt_folder = '/ssd/wfei/data/LPR_training/20181206_crnn_data_train_v1.8e'
 batch_rename_copy(train_csv, tgt_folder)
 
 json_file = '/ssd/wfei/data/testing_data/wanda_benchmark_label.json'
