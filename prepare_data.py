@@ -5,8 +5,8 @@ import os
 import glob
 import json
 
-train_csv = "/Users/fei/tmp/wanda_plates_1105/20181105_plates_crnn_training_100k.txt"
-train_csv = "/ssd/zq/parkinglot_pipeline/carplate/data/20181206_crnn_training_data_label_v1.7"
+#train_csv = "/Users/fei/tmp/wanda_plates_1105/20181105_plates_crnn_training_100k.txt"
+train_csv = "/ssd/zq/parkinglot_pipeline/carplate/data/20181220_crnn_training_data_label_v1.8e"
 
 CHARS = ['京', '沪', '津', '渝', '冀', '晋', '蒙', '辽', '吉', '黑',
          '苏', '浙', '皖', '闽', '赣', '鲁', '豫', '鄂', '湘', '粤',
@@ -67,8 +67,8 @@ def batch_rename_copy(filename, tgt_folder):
     # store the number of counts of each plate
     plate_count ={}
     for index, row in data.iterrows():
-        if index < 6085:
-           continue 
+        #if index < 6085:
+        #   continue
         plate_path = row.path
         plate_chars = row.transcription.split('|')
         pid = convert_chars(plate_chars)
@@ -114,12 +114,12 @@ def batch_benchmark_rename_copy(json_file, src_folder, tgt_folder):
 
 
 tgt_folder = '/ssd/wfei/data/CRNN_training/20181206_crnn_data_train_v1.7'
-#batch_rename_copy(train_csv, tgt_folder)
+batch_rename_copy(train_csv, tgt_folder)
 
 json_file = '/ssd/wfei/data/testing_data/wanda_benchmark_label.json'
 src_dir  ='/ssd/wfei/data/testing_data/wanda_plates_v1.2'
 tgt_dir = '/ssd/wfei/data/testing_data/wanda_plates_v1.2_with_label'
 
-batch_benchmark_rename_copy(json_file, src_dir, tgt_dir)
+#batch_benchmark_rename_copy(json_file, src_dir, tgt_dir)
 
 
