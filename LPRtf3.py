@@ -7,7 +7,7 @@ import re
 import random
 
 #训练最大轮次
-num_epochs = 140
+num_epochs = 200
 
 #初始化学习速率
 INITIAL_LEARNING_RATE = 1e-3
@@ -25,8 +25,8 @@ BATCHES = TRAIN_SIZE//BATCH_SIZE
 test_num = 3
 
 #ti = 'train'         #训练集位置
-#vi = 'valid'         #验证集位置
-ti = '/ssd/wfei/data/LPR_training/20181206_crnn_data_train_v1.8e'         #训练集位置
+#vi = 'valid'         #验证集位
+ti = '/ssd/wfei/data/LPR_training/20181220_crnn_data_train_v1.8e'         #训练集位置
 vi = '/ssd/wfei/data/LPR_training/20181206_crnn_data_val_v1.7'         #验证集位置
 img_size = [94, 24]
 tl = None
@@ -91,7 +91,10 @@ class TextImageGenerator:
                 label = filename[:7]
             else:
                 print(filename)
-                label = dict[filename[:3]] + filename[4:10]
+                if filename[:3] in dict:
+                    label = dict[filename[:3]] + filename[4:10]
+                else:
+                    continue
             label = encode_label(label)
             self.labels.append(label)
             self._num_examples += 1
@@ -409,7 +412,7 @@ def train(a):
         #print(b_cost, steps)
         if steps > 0 and steps % REPORT_STEPS == 0:
             do_report(val_gen,test_num)
-            saver.save(session, "./model/LPR110k.ckpt", global_step=steps)
+            saver.save(session, "./model/LPRk110k.ckpt", global_step=steps)
         return b_cost, steps
 
     with tf.Session() as session:

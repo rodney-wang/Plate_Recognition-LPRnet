@@ -118,7 +118,7 @@ def batch_benchmark_rename_copy(json_file, src_folder, tgt_folder):
         copy_file(plate_path, os.path.join(tgt_folder, tgt_name))
 
 
-tgt_folder = '/ssd/wfei/data/LPR_training/20181206_crnn_data_train_v1.8e'
+tgt_folder = '/ssd/wfei/data/LPR_training/20181220_crnn_data_train_v1.8e'
 batch_rename_copy(train_csv, tgt_folder)
 
 json_file = '/ssd/wfei/data/testing_data/wanda_benchmark_label.json'
