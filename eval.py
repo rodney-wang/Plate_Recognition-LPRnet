@@ -86,7 +86,13 @@ def batch_eval(img_dir, label_file, out_dir):
     loss = tf.nn.ctc_loss(labels=targets, inputs=logits, sequence_length=seq_len)
     cost = tf.reduce_mean(loss)
 
-    decoded, log_prob = tf.nn.ctc_beam_search_decoder(logits, seq_len, merge_repeated=False)
+    #decoded, log_prob = tf.nn.ctc_beam_search_decoder(logits, seq_len, merge_repeated=False)
+    decoded, log_prob = tf.nn.ctc_beam_search_decoder(logits,seq_len,
+                                                      merge_repeated=False,
+                                                      beam_width=100,
+                                                      top_paths=3)
+    score = tf.subtract(log_prob[:, 0], log_prob[:, 1], name='score_computation')
+
     acc = tf.reduce_mean(tf.edit_distance(tf.cast(decoded[0], tf.int32), targets))
 
     init = tf.global_variables_initializer()
@@ -111,7 +117,7 @@ def batch_eval(img_dir, label_file, out_dir):
                          targets: test_targets,
                          seq_len: test_seq_len}
             st = time.time()
-            [dd, scores] = session.run([decoded[0], log_prob], test_feed)
+            [dd, probs, scores] = session.run([decoded[0], log_prob, score], test_feed)
             tim = time.time() - st
             print('time:%s' % tim)
             #print(scores)
