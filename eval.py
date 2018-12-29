@@ -110,8 +110,9 @@ def batch_eval(img_dir, label_file, out_dir):
                                       img_size=img_size,
                                       num_channels=num_channels,
                                       label_len=label_len)
-        #do_report(test_gen, 3)
-        for i in range(4):
+        nbatches = test_gen._num_batches
+        print('### Number of batches = {}'.format(nbatches))
+        for i in range(nbatches):
             test_inputs, test_targets, test_seq_len, img_names = test_gen.next_batch()
             test_feed = {inputs: test_inputs,
                          targets: test_targets,

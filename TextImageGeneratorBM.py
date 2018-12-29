@@ -18,6 +18,8 @@ class TextImageGeneratorBM:
         self._num_examples = 0
         self._next_index = 0
         self._num_epoches = 0
+        self._num_batches = 0
+
         self.filenames = []
         self.labels = []
 
@@ -46,6 +48,7 @@ class TextImageGeneratorBM:
                     self.labels.append(label)
                     self._num_examples += 1
         self.labels = np.float32(self.labels)
+        self._num_batches = self._num_examples//self._batch_size +1
 
     def next_batch(self):
         # Shuffle the data
@@ -161,7 +164,7 @@ def report_accuracy(decoded_list, test_targets, scores):
         gt = ''.join(number).decode('utf-8')
         detect = ''.join(detect_number).decode('utf-8')
         if not hit:
-            print hit, gt, "(", len(number), ") <-------> ", detect, "(", len(detect_number), ")", 100*scores[idx][0]
+            print hit, gt, "(", len(number), ") <-------> ", detect, "(", len(detect_number), ")", scores[idx]
         if hit:
             true_numer = true_numer + 1
     print("Test Accuracy:", true_numer * 1.0 / len(original_list))
@@ -184,7 +187,7 @@ def write_ocr(detected_list, scores, filenames, out_dir):
     for idx, number in enumerate(detected_list):
         detect_number = detected_list[idx]
         detect = ''.join(detect_number)
-        score = scores[idx][0] * 100.0
+        score = scores[idx]
         fname = filenames[idx].split('_plate.png')[0]
         fname = fname.replace('.jpg', '.txt')
         fpath = os.path.join(out_dir, fname)
