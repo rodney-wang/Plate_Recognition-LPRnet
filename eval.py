@@ -10,8 +10,10 @@ import time
 from model import get_train_model
 from TextImageGeneratorBM import TextImageGeneratorBM, report_accuracy, write_ocr
 
-from config_new import BATCH_SIZE, img_size, num_channels, label_len, NUM_CHARS
+#from config_new import BATCH_SIZE, img_size, num_channels, label_len, NUM_CHARS
+from config import BATCH_SIZE, img_size, num_channels, label_len, NUM_CHARS
 import pdb
+os.environ["CUDA_VISIBLE_DEVICES"]="-1"
 
 def get_images(input_path):
     '''
@@ -92,7 +94,7 @@ def batch_eval(img_dir, label_file, out_dir):
     with tf.Session() as session:
         session.run(init)
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
-        saver.restore(session, './model69/LPRtf3.ckpt-51000')
+        saver.restore(session, './model/LPRk110k.ckpt-72000')
 
         test_gen = TextImageGeneratorBM(img_dir=img_dir,
                                       label_file=label_file,
@@ -120,7 +122,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Plate end to end test')
     parser.add_argument('--img_dir', default='/ssd/wfei/data/testing_data/wanda_plates_v1.2',
                         type=str, help='Input test image dir')
-    parser.add_argument('--out_dir', default='/ssd/wfei/data/testing_data/lpr_results_v1.0',
+    parser.add_argument('--out_dir', default='/ssd/wfei/data/testing_data/wanda_results_lpr_v1.0',
                         type=str, help='Output image dir')
     parser.add_argument('--label_file', default='/ssd/wfei/data/testing_data/wanda_benchmark_label.json',
                         type=str, help='Output image dir')
