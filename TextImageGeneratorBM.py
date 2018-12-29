@@ -4,7 +4,7 @@ import numpy as np
 import cv2
 import json
 
-from config_new import CHARS, dict, CHARS_DICT, NUM_CHARS
+from config import CHARS, dict, CHARS_DICT, NUM_CHARS
 
 class TextImageGeneratorBM:
     def __init__(self, img_dir, label_file, batch_size, img_size, num_channels=3, label_len=7):

@@ -99,7 +99,7 @@ if __name__ == '__main__':
     out_dir = '/Users/fei/data/parking/carplate/testing_data/k11_benchmark/'
 
     args = parse_args()
-    #write_plate_label_to_json(img_path, out_dir)
+    write_plate_label_to_json(args.img_dir, args.out_dir)
     #write_plate_image(img_path, json_path_corner, out_dir)
 
     # To run it on K11 data
@@ -107,4 +107,4 @@ if __name__ == '__main__':
     # --corner_json /ssd/zq/parkinglot_pipeline/carplate/test_data_k11/corner_output_v1.2.json
     # --out_dir /ssd/wfei/data/testing_data/k11_plates_v1.2
     #write_plate_label_to_json(img_path, out_dir)
-    write_plate_image(args.img_dir, args.corner_json, args.out_dir)
+    #write_plate_image(args.img_dir, args.corner_json, args.out_dir)
