@@ -22,7 +22,7 @@ REPORT_STEPS = 3000
 
 #训练集的数量
 BATCH_SIZE = 256
-TRAIN_SIZE = 79360
+TRAIN_SIZE = 76800
 BATCHES = TRAIN_SIZE//BATCH_SIZE
 test_num = 3
 
@@ -70,7 +70,6 @@ class TextImageGenerator:
         self.init()
 
 
-
     def init(self):
         self.labels = []
         fs = os.listdir(self._img_dir)
@@ -80,6 +79,8 @@ class TextImageGenerator:
         for filename in self.filenames:
             label = decode_fname(filename)
             label = encode_label(label)
+            if len(label) >7:
+                continue
             self.labels.append(label)
             self._num_examples += 1
         self.labels = np.float32(self.labels)
