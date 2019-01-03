@@ -26,8 +26,8 @@ TRAIN_SIZE = 76800
 BATCHES = TRAIN_SIZE//BATCH_SIZE
 test_num = 3
 
-ti = '/ssd/wfei/data/CRNN_training/20181206_crnn_data_train_v1.7_new'         #训练集位置
-vi = '/ssd/wfei/data/CRNN_training/20181206_crnn_data_train_v1.7_new'         #验证集位置
+ti = '/ssd/wfei/data/LPR_training/20181206_crnn_data_train_v1.7_new'         #训练集位置
+vi = '/ssd/wfei/data/LPR_training/20181206_crnn_data_train_v1.7_new'         #验证集位置
 img_size = [94, 24]
 tl = None
 vl = None
