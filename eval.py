@@ -100,7 +100,6 @@ def batch_eval(img_dir, label_file, out_dir):
     with tf.Session() as session:
         session.run(init)
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
-        #saver.restore(session, './model/LPRk110k.ckpt-72000')
         #saver.restore(session, './model/LPRMore.ckpt-48000')
         saver.restore(session, './model/LPRtf3.ckpt-72000')
 
@@ -131,7 +130,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Plate end to end test')
     parser.add_argument('--img_dir', default='/ssd/wfei/data/testing_data/wanda_plates_v1.2',
                         type=str, help='Input test image dir')
-    parser.add_argument('--out_dir', default='/ssd/wfei/data/testing_data/wanda_results_lpr_v1.0',
+    parser.add_argument('--out_dir', default='/ssd/wfei/data/testing_data/wanda_lpr_results_v1.3',
                         type=str, help='Output image dir')
     parser.add_argument('--label_file', default='/ssd/wfei/data/testing_data/wanda_benchmark_label.json',
                         type=str, help='Output image dir')
@@ -152,4 +151,5 @@ if __name__ == '__main__':
     out_dir = '/Users/fei/data/parking/carplate/testing_data/wanda_benchmark/ocr_results_v1.2'
     #main(args.img_dir)
     #main(img_dir)
-    batch_eval(img_dir, label_file, out_dir)
+    #batch_eval(img_dir, label_file, out_dir)
+    batch_eval(args.img_dir, args.label_file, args.out_dir)
