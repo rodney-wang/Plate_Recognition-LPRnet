@@ -102,7 +102,7 @@ def batch_eval(img_dir, label_file, out_dir):
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
         #saver.restore(session, './model/LPRk110k.ckpt-72000')
         #saver.restore(session, './model/LPRMore.ckpt-48000')
-        saver.restore(session, './model/LPRtf3.ckpt-72000')
+        saver.restore(session, './model69/LPRtf3.ckpt-63000')
 
         test_gen = TextImageGeneratorBM(img_dir=img_dir,
                                       label_file=label_file,
@@ -152,4 +152,5 @@ if __name__ == '__main__':
     out_dir = '/Users/fei/data/parking/carplate/testing_data/wanda_benchmark/ocr_results_v1.2'
     #main(args.img_dir)
     #main(img_dir)
-    batch_eval(img_dir, label_file, out_dir)
+    #batch_eval(img_dir, label_file, out_dir)
+    batch_eval(args.img_dir, args.label_file, args.out_dir)
