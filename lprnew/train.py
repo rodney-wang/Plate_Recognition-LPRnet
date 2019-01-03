@@ -8,8 +8,9 @@ import random
 from model import get_train_model
 from config_new import CHARS, dict, CHARS_DICT, NUM_CHARS
 
+os.environ["CUDA_VISIBLE_DEVICES"]="0,1,2,3,4"
 #训练最大轮次
-num_epochs = 400
+num_epochs = 300
 
 #初始化学习速率
 INITIAL_LEARNING_RATE = 1e-3
@@ -81,6 +82,7 @@ class TextImageGenerator:
             label = encode_label(label)
             if len(label) >7:
                 continue
+            #print(filename, label)
             self.labels.append(label)
             self._num_examples += 1
         self.labels = np.float32(self.labels)
@@ -270,18 +272,18 @@ def train(a):
         #print(b_cost, steps)
         if steps > 0 and steps % REPORT_STEPS == 0:
             do_report(val_gen,test_num)
-            saver.save(session, "./model69/LPRtf3.ckpt", global_step=steps)
+            saver.save(session, "./model69/LPRChar69.ckpt", global_step=steps)
         return b_cost, steps
 
     with tf.Session() as session:
         session.run(init)
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
         if a=='train':
-             #start_epoch = 0
-             checkpoint = './model69/LPRtf3.ckpt-63000'
-             saver.restore(session, checkpoint)
-             checkpoint_id = 63000
-             start_epoch = checkpoint_id // BATCHES
+             start_epoch = 0
+             #checkpoint = './model69/LPRtf3.ckpt-63000'
+             #saver.restore(session, checkpoint)
+             #checkpoint_id = 63000
+             #start_epoch = checkpoint_id // BATCHES
              for curr_epoch in range(start_epoch, num_epochs):
                 print("Epoch.......", curr_epoch)
                 train_cost = train_ler = 0

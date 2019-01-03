@@ -102,7 +102,7 @@ def batch_eval(img_dir, label_file, out_dir):
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
         #saver.restore(session, './model/LPRk110k.ckpt-72000')
         #saver.restore(session, './model/LPRMore.ckpt-48000')
-        saver.restore(session, './model69/LPRtf3.ckpt-63000')
+        saver.restore(session, './model69/LPRtf3.ckpt-45000')
 
         test_gen = TextImageGeneratorBM(img_dir=img_dir,
                                       label_file=label_file,
