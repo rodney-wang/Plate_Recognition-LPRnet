@@ -11,7 +11,9 @@ from model import get_train_model
 from TextImageGeneratorBM import TextImageGeneratorBM, report_accuracy, write_ocr
 
 #from config_new import BATCH_SIZE, img_size, num_channels, label_len, NUM_CHARS
-from config import BATCH_SIZE, img_size, num_channels, label_len, NUM_CHARS
+from config import  img_size, num_channels, label_len, NUM_CHARS
+BATCH_SIZE = 1
+
 import pdb
 os.environ["CUDA_VISIBLE_DEVICES"]="-1"
 
