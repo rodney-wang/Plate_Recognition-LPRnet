@@ -9,7 +9,7 @@ from model import get_train_model
 from config_new import CHARS, dict, CHARS_DICT, NUM_CHARS
 
 #训练最大轮次
-num_epochs = 160
+num_epochs = 400
 
 #初始化学习速率
 INITIAL_LEARNING_RATE = 1e-3
@@ -22,12 +22,12 @@ REPORT_STEPS = 3000
 
 #训练集的数量
 BATCH_SIZE = 256
-TRAIN_SIZE = 76800
+TRAIN_SIZE = 79360
 BATCHES = TRAIN_SIZE//BATCH_SIZE
 test_num = 3
 
-ti = '/ssd/wfei/data/CRNN_training/20181206_crnn_data_train_v1.7'         #训练集位置
-vi = '/ssd/wfei/data/CRNN_training/20181206_crnn_data_train_v1.7'         #验证集位置
+ti = '/ssd/wfei/data/CRNN_training/20181206_crnn_data_train_v1.7_new'         #训练集位置
+vi = '/ssd/wfei/data/CRNN_training/20181206_crnn_data_train_v1.7_new'         #验证集位置
 img_size = [94, 24]
 tl = None
 vl = None
@@ -39,6 +39,16 @@ def encode_label(s):
     label = np.zeros([len(s)])
     for i, c in enumerate(s):
         label[i] = CHARS_DICT[c]
+    return label
+
+def decode_fname(fname):
+    parts = fname.split('_')[:-1]
+    label = ""
+    for seg in parts:
+        if seg in dict:
+            label += dict[seg]
+        else:
+            label += seg
     return label
 
 #读取图片和label,产生batch
@@ -59,6 +69,8 @@ class TextImageGenerator:
 
         self.init()
 
+
+
     def init(self):
         self.labels = []
         fs = os.listdir(self._img_dir)
@@ -66,11 +78,7 @@ class TextImageGenerator:
             if filename[-4:] == '.jpg' or filename[-4:] == '.png':
                 self.filenames.append(filename)
         for filename in self.filenames:
-            if '\u4e00' <= filename[0]<= '\u9fff':
-                label = filename[:7]
-            else:
-                print(filename)
-                label = dict[filename[:3]] + filename[4:10]
+            label = decode_fname(filename)
             label = encode_label(label)
             self.labels.append(label)
             self._num_examples += 1
@@ -268,11 +276,11 @@ def train(a):
         session.run(init)
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
         if a=='train':
-             start_epoch = 0
-             #checkpoint = './model69/LPRtf3.ckpt-10000'
-             #saver.restore(session, checkpoint)
-             #checkpoint_id = 10000
-             #start_epoch = checkpoint_id // BATCHES
+             #start_epoch = 0
+             checkpoint = './model69/LPRtf3.ckpt-63000'
+             saver.restore(session, checkpoint)
+             checkpoint_id = 63000
+             start_epoch = checkpoint_id // BATCHES
              for curr_epoch in range(start_epoch, num_epochs):
                 print("Epoch.......", curr_epoch)
                 train_cost = train_ler = 0
