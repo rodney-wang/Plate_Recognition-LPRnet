@@ -5,12 +5,13 @@ import cv2
 import os
 import re
 import random
+from augment_data import augment_data
 from config_new import CHARS, dict, CHARS_DICT, NUM_CHARS
 
-os.environ["CUDA_VISIBLE_DEVICES"]="5,6"
+os.environ["CUDA_VISIBLE_DEVICES"]="6, 7"
 
 #训练最大轮次
-num_epochs = 200
+num_epochs = 400
 
 #初始化学习速率
 INITIAL_LEARNING_RATE = 1e-3
@@ -76,20 +77,21 @@ class TextImageGenerator:
     def init(self):
         self.labels = []
         fs = os.listdir(self._img_dir)
+        # for filename in fs:
+        #    if filename[-4:] == '.jpg' or filename[-4:] == '.png':
+        #        self.filenames.append(filename)
         for filename in fs:
             if filename[-4:] == '.jpg' or filename[-4:] == '.png':
+                label = decode_fname(filename)
+                label = encode_label(label)
+                if len(label) > 7 or len(label) < 6:
+                    continue
                 self.filenames.append(filename)
-        for filename in self.filenames:
-            label = decode_fname(filename)
-            label = encode_label(label)
-            if len(label) >7:
-                self.filenames.remove(filename)
-                continue
-
-            self.labels.append(label)
-            self._num_examples += 1
+                self.labels.append(label)
+                self._num_examples += 1
         self.labels = np.float32(self.labels)
         print(len(self.filenames), len(self.labels))
+        print("Number of examples: {}".format(self._num_examples))
 
     def next_batch(self):
         # Shuffle the data
@@ -115,6 +117,8 @@ class TextImageGenerator:
         for j, i in enumerate(range(start, end)):
             fname = self._filenames[i]
             img = cv2.imread(os.path.join(self._img_dir, fname))
+            ### ADD DATA AUGMENTATION ###
+            img = augment_data(img)
             img = cv2.resize(img, (self._img_w, self._img_h), interpolation=cv2.INTER_CUBIC)
             images[j, ...] = img
         images = np.transpose(images, axes=[0, 2, 1, 3])
@@ -403,7 +407,7 @@ def train(a):
         #print(b_cost, steps)
         if steps > 0 and steps % REPORT_STEPS == 0:
             do_report(val_gen,test_num)
-            saver.save(session, "./model/LPRk110k.ckpt", global_step=steps)
+            saver.save(session, "./model69/LPRAug.ckpt", global_step=steps)
         return b_cost, steps
 
     with tf.Session() as session:
