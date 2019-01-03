@@ -41,11 +41,9 @@ def convert_chars(plate_chars):
                 if i == 0:
                     res.append(chi_str_dict[char])
                     res.append('_')
-                elif i == plen-1:
+                else:
                     res.append('_')
                     res.append(chi_str_dict[char])
-                else:
-                    continue
             else:
                 res.append(char)
     return ''.join(res)
@@ -73,12 +71,14 @@ def batch_rename_copy(filename, tgt_folder):
     # store the number of counts of each plate
     plate_count ={}
     for index, row in data.iterrows():
-        #if index < 6085:
-        #   continue
+        if index > 10:
+           continue
         plate_path = row.path
         plate_chars = row.transcription.split('|')
+        plate_chars = [c for c in plate_chars if c is not u'']
+        print plate_chars
         pid = convert_chars(plate_chars)
-        #print plate_chars, pid
+        print plate_chars, pid
         if pid not in plate_count:
             plate_count[pid] = 0
         else:
@@ -120,6 +120,8 @@ def batch_benchmark_rename_copy(json_file, src_folder, tgt_folder):
 
 
 tgt_folder = '/ssd/wfei/data/LPR_training/20181206_crnn_data_train_v1.7_new'
+#tgt_folder = '/Users/fei/tmp/test/tgt_folder'
+
 batch_rename_copy(train_csv, tgt_folder)
 
 # json_file = '/ssd/wfei/data/testing_data/wanda_benchmark_label.json'
