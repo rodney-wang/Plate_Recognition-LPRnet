@@ -5,12 +5,12 @@ import cv2
 import os
 import re
 import random
-from model import get_train_model
 from config_new import CHARS, dict, CHARS_DICT, NUM_CHARS
 
-os.environ["CUDA_VISIBLE_DEVICES"]="0,1,2,3,4"
+os.environ["CUDA_VISIBLE_DEVICES"]="5,6"
+
 #训练最大轮次
-num_epochs = 300
+num_epochs = 200
 
 #初始化学习速率
 INITIAL_LEARNING_RATE = 1e-3
@@ -23,12 +23,14 @@ REPORT_STEPS = 3000
 
 #训练集的数量
 BATCH_SIZE = 256
-TRAIN_SIZE = 76800
+TRAIN_SIZE = 93963
 BATCHES = TRAIN_SIZE//BATCH_SIZE
 test_num = 3
 
-ti = '/ssd/wfei/data/LPR_training/20181206_crnn_data_train_v1.7_new'         #训练集位置
-vi = '/ssd/wfei/data/LPR_training/20181206_crnn_data_train_v1.7_new'         #验证集位置
+#ti = 'train'         #训练集位置
+#vi = 'valid'         #验证集位
+ti = '/ssd/wfei/data/LPR_training/20181206_crnn_data_val_v1.7_new'         #训练集位置
+vi = '/ssd/wfei/data/LPR_training/20181206_crnn_data_val_v1.7_new'         #验证集位置
 img_size = [94, 24]
 tl = None
 vl = None
@@ -41,6 +43,7 @@ def encode_label(s):
     for i, c in enumerate(s):
         label[i] = CHARS_DICT[c]
     return label
+
 
 def decode_fname(fname):
     parts = fname.split('_')[:-1]
@@ -70,7 +73,6 @@ class TextImageGenerator:
 
         self.init()
 
-
     def init(self):
         self.labels = []
         fs = os.listdir(self._img_dir)
@@ -84,7 +86,6 @@ class TextImageGenerator:
                 self.filenames.remove(filename)
                 continue
 
-            #print(filename, label)
             self.labels.append(label)
             self._num_examples += 1
         self.labels = np.float32(self.labels)
@@ -172,6 +173,136 @@ def decode_a_seq(indexes, spars_tensor):
         decoded.append(str)
     return decoded
 
+def small_basic_block(x,im,om):
+    x = conv(x,im,int(om/4),ksize=[1,1])
+    x = conv(x,int(om/4),int(om/4),ksize=[3,1],pad='SAME')
+    x = conv(x,int(om/4),int(om/4),ksize=[1,3],pad='SAME')
+    x = conv(x,int(om/4),om,ksize=[1,1])
+    return x
+
+def conv(x,im,om,ksize,stride=[1,1,1,1],pad = 'SAME'):
+    conv_weights = tf.Variable(
+        tf.truncated_normal([ksize[0], ksize[1], im, om],  # 5x5 filter, depth 32.
+                            stddev=0.1,
+                            seed=None, dtype=tf.float32))
+    conv_biases = tf.Variable(tf.zeros([om], dtype=tf.float32))
+    out = tf.nn.conv2d(x,
+                        conv_weights,
+                        strides=stride,
+                        padding=pad)
+    relu = tf.nn.bias_add(out, conv_biases)
+    return relu
+
+def get_train_model(num_channels, label_len, b, img_size):
+    inputs = tf.placeholder(
+        tf.float32,
+        shape=(b, img_size[0], img_size[1], num_channels))
+
+    # 定义ctc_loss需要的稀疏矩阵
+    targets = tf.sparse_placeholder(tf.int32)
+
+    # 1维向量 序列长度 [batch_size,]
+    seq_len = tf.placeholder(tf.int32, [None])
+    x = inputs
+
+    x = conv(x,num_channels,64,ksize=[3,3])
+    x = tf.layers.batch_normalization(x)
+    x = tf.nn.relu(x)
+    x = tf.nn.max_pool(x,
+                          ksize=[1, 3, 3, 1],
+                          strides=[1, 1, 1, 1],
+                          padding='SAME')
+    x = small_basic_block(x,64,64)
+    x2=x
+    x = tf.layers.batch_normalization(x)
+    x = tf.nn.relu(x)
+
+    x = tf.nn.max_pool(x,
+                          ksize=[1, 3, 3, 1],
+                          strides=[1, 2, 1, 1],
+                          padding='SAME')
+    x = small_basic_block(x, 64,256)
+    x = tf.layers.batch_normalization(x)
+    x = tf.nn.relu(x)
+    x = small_basic_block(x, 256, 256)
+    x3 = x
+    x = tf.layers.batch_normalization(x)
+
+    x = tf.nn.relu(x)
+    x = tf.nn.max_pool(x,
+                       ksize=[1, 3, 3, 1],
+                       strides=[1, 2, 1, 1],
+                       padding='SAME')
+    x = tf.layers.dropout(x)
+
+    x = conv(x, 256, 256, ksize=[4, 1])
+    x = tf.layers.dropout(x)
+    x = tf.layers.batch_normalization(x)
+    x = tf.nn.relu(x)
+
+
+    x = conv(x,256,NUM_CHARS+1,ksize=[1,13],pad='SAME')
+    x = tf.nn.relu(x)
+    cx = tf.reduce_mean(tf.square(x))
+    x = tf.div(x,cx)
+
+    #x = tf.reduce_mean(x,axis = 2)
+    #x1 = conv(inputs,num_channels,num_channels,ksize = (5,1))
+
+
+    x1 = tf.nn.avg_pool(inputs,
+                       ksize=[1, 4, 1, 1],
+                       strides=[1, 4, 1, 1],
+                       padding='SAME')
+    cx1 = tf.reduce_mean(tf.square(x1))
+    x1 = tf.div(x1, cx1)
+
+    # x1 = tf.image.resize_images(x1, size = [18, 16], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+
+    x2 = tf.nn.avg_pool(x2,
+                        ksize=[1, 4, 1, 1],
+                        strides=[1, 4, 1, 1],
+                        padding='SAME')
+    cx2 = tf.reduce_mean(tf.square(x2))
+    x2 = tf.div(x2, cx2)
+
+    #x2 = tf.image.resize_images(x2, size=[18, 16], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+
+    x3 = tf.nn.avg_pool(x3,
+                        ksize=[1, 2, 1, 1],
+                        strides=[1, 2, 1, 1],
+                        padding='SAME')
+    cx3 = tf.reduce_mean(tf.square(x3))
+    x3 = tf.div(x3, cx3)
+
+    #x3 = tf.image.resize_images(x3, size=[18, 16], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+
+
+    #x1 = tf.nn.relu(x1)
+
+    x = tf.concat([x,x1,x2,x3],3)
+    x = conv(x, x.get_shape().as_list()[3], NUM_CHARS + 1, ksize=(1, 1))
+    logits = tf.reduce_mean(x,axis=2)
+    # x_shape = x.get_shape().as_list()
+    # outputs = tf.reshape(x, [-1,x_shape[2]*x_shape[3]])
+    # W1 = tf.Variable(tf.truncated_normal([x_shape[2]*x_shape[3],
+    #                                      150],
+    #                                     stddev=0.1))
+    # b1 = tf.Variable(tf.constant(0., shape=[150]))
+    # # [batch_size*max_timesteps,num_classes]
+    # x = tf.matmul(outputs, W1) + b1
+    # x= tf.layers.dropout(x)
+    # x = tf.nn.relu(x)
+    # W2 = tf.Variable(tf.truncated_normal([150,
+    #                                      NUM_CHARS+1],
+    #                                     stddev=0.1))
+    # b2 = tf.Variable(tf.constant(0., shape=[NUM_CHARS+1]))
+    # x = tf.matmul(x, W2) + b2
+    # x = tf.layers.dropout(x)
+    # # [batch_size,max_timesteps,num_classes]
+    # logits = tf.reshape(x, [b, -1, NUM_CHARS+1])
+
+    return logits, inputs, targets, seq_len
 
 def train(a):
 
@@ -189,8 +320,6 @@ def train(a):
                                  num_channels=num_channels,
                                  label_len=label_len)
     global_step = tf.Variable(0, trainable=False)
-    #is_training = tf.placeholder(tf.bool, name='is_training')
-
     learning_rate = tf.train.exponential_decay(INITIAL_LEARNING_RATE,
                                                global_step,
                                                DECAY_STEPS,
@@ -203,7 +332,6 @@ def train(a):
     cost = tf.reduce_mean(loss)
 
     # optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate,momentum=MOMENTUM).minimize(cost, global_step=global_step)
-
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss, global_step=global_step)
 
     # 前面说的划分块之后找每块的类属概率分布，ctc_beam_search_decoder方法,是每次找最大的K个概率分布
@@ -275,7 +403,7 @@ def train(a):
         #print(b_cost, steps)
         if steps > 0 and steps % REPORT_STEPS == 0:
             do_report(val_gen,test_num)
-            saver.save(session, "./model69/LPRChar69.ckpt", global_step=steps)
+            saver.save(session, "./model/LPRk110k.ckpt", global_step=steps)
         return b_cost, steps
 
     with tf.Session() as session:
@@ -283,10 +411,10 @@ def train(a):
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
         if a=='train':
              start_epoch = 0
-             #checkpoint = './model69/LPRtf3.ckpt-63000'
+             #checkpoint = './model/LPRtf3.ckpt-42000'
              #saver.restore(session, checkpoint)
-             #checkpoint_id = 63000
-             #start_epoch = checkpoint_id // BATCHES
+             #checkpoint_id = 42000 
+             #start_epoch = checkpoint_id // BATCHES 
              for curr_epoch in range(start_epoch, num_epochs):
                 print("Epoch.......", curr_epoch)
                 train_cost = train_ler = 0
@@ -313,7 +441,18 @@ def train(a):
                 log = "Epoch {}/{}, steps = {}, train_cost = {:.3f}, train_ler = {:.3f}, val_cost = {:.3f}, val_ler = {:.3f}, time = {:.3f}s, learning_rate = {}"
                 print(log.format(curr_epoch + 1, num_epochs, steps, train_cost, train_ler, val_cs/test_num, val_ls/test_num,
                                  time.time() - start, lr))
+        if a =='test':
+            testi='/ssd/wfei/data/testing_data/wanda_plates_v1.2_with_label'
+            saver.restore(session, './model/LPRtf3.ckpt-42000')
+            test_gen = TextImageGenerator(img_dir=testi,
+                                           label_file=None,
+                                           batch_size=BATCH_SIZE,
+                                           img_size=img_size,
+                                           num_channels=num_channels,
+                                           label_len=label_len)
+            do_report(test_gen,4)
+
 
 if __name__ == "__main__":
-        a = "train"
+        a = input('train or test:')
         train(a)
