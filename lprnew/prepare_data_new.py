@@ -71,8 +71,8 @@ def batch_rename_copy(filename, tgt_folder):
     # store the number of counts of each plate
     plate_count ={}
     for index, row in data.iterrows():
-        if index > 10:
-           continue
+        #if index > 10:
+        #   continue
         plate_path = row.path
         plate_chars = row.transcription.split('|')
         plate_chars = [c for c in plate_chars if c is not u'']
