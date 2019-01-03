@@ -8,9 +8,9 @@ import random
 from model import get_train_model
 from config_new import CHARS, dict, CHARS_DICT, NUM_CHARS
 
-os.environ["CUDA_VISIBLE_DEVICES"]="0,1,2,3,4"
+os.environ["CUDA_VISIBLE_DEVICES"]="1,2,3,4,5"
 #训练最大轮次
-num_epochs = 300
+num_epochs = 400
 
 #初始化学习速率
 INITIAL_LEARNING_RATE = 1e-3
@@ -74,21 +74,21 @@ class TextImageGenerator:
     def init(self):
         self.labels = []
         fs = os.listdir(self._img_dir)
+        #for filename in fs:
+        #    if filename[-4:] == '.jpg' or filename[-4:] == '.png':
+        #        self.filenames.append(filename)
         for filename in fs:
             if filename[-4:] == '.jpg' or filename[-4:] == '.png':
+                label = decode_fname(filename)
+                label = encode_label(label)
+                if len(label) > 7 or len(label)<6:
+                    continue
                 self.filenames.append(filename)
-        for filename in self.filenames:
-            label = decode_fname(filename)
-            label = encode_label(label)
-            if len(label) >7:
-                self.filenames.remove(filename)
-                continue
-
-            #print(filename, label)
-            self.labels.append(label)
-            self._num_examples += 1
+                self.labels.append(label)
+                self._num_examples += 1
         self.labels = np.float32(self.labels)
         print(len(self.filenames), len(self.labels))
+        print("Number of examples: {}".format(self._num_examples))
 
     def next_batch(self):
         # Shuffle the data
