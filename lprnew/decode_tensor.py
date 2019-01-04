@@ -1,7 +1,7 @@
 #coding=utf-8
 from collections import OrderedDict
 import tensorflow as tf
-from config import CHARS, CHARS_DICT
+from config_new import CHARS, CHARS_DICT
 
 # def get_words_from_chars(characters_list: List[str], sequence_lengths: List[int], name='chars_conversion'):
 #     with tf.name_scope(name=name):
