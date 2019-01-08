@@ -8,9 +8,9 @@ import random
 from model import get_train_model
 from config_new import CHARS, dict, CHARS_DICT, NUM_CHARS
 
-os.environ["CUDA_VISIBLE_DEVICES"]="1,2,3,4,5"
+os.environ["CUDA_VISIBLE_DEVICES"]="1,2,3,4"
 #训练最大轮次
-num_epochs = 400
+num_epochs = 200
 
 #初始化学习速率
 INITIAL_LEARNING_RATE = 1e-3
@@ -23,12 +23,13 @@ REPORT_STEPS = 3000
 
 #训练集的数量
 BATCH_SIZE = 256
-TRAIN_SIZE = 76800
+TRAIN_SIZE = 950000 
 BATCHES = TRAIN_SIZE//BATCH_SIZE
 test_num = 3
 
-ti = '/ssd/wfei/data/LPR_training/20181206_crnn_data_train_v1.7_new'         #训练集位置
-vi = '/ssd/wfei/data/LPR_training/20181206_crnn_data_train_v1.7_new'         #验证集位置
+#ti = '/ssd/wfei/data/LPR_training/20181206_crnn_data_train_v1.7_new'         #训练集位置
+ti = '/ssd/wfei/data/LPR_training/20190106_lpr_data_train_wanda5000'         #训练集位置
+vi = '/ssd/wfei/data/LPR_training/20181206_crnn_data_val_v1.7'         #验证集位置
 img_size = [94, 24]
 tl = None
 vl = None
@@ -81,8 +82,11 @@ class TextImageGenerator:
             if filename[-4:] == '.jpg' or filename[-4:] == '.png':
                 label = decode_fname(filename)
                 label = encode_label(label)
-                if len(label) > 7 or len(label)<6:
+                #if len(label) > 7 or len(label)<6:
+                if len(label) !=7:
                     continue
+                #elif len(label) !=7:
+                #    print(label)
                 self.filenames.append(filename)
                 self.labels.append(label)
                 self._num_examples += 1
@@ -282,12 +286,12 @@ def train(a):
         session.run(init)
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
         if a=='train':
-             start_epoch = 0
-             #checkpoint = './model69/LPRtf3.ckpt-63000'
-             #saver.restore(session, checkpoint)
-             #checkpoint_id = 63000
-             #start_epoch = checkpoint_id // BATCHES
-             for curr_epoch in range(start_epoch, num_epochs):
+             #start_epoch = 0
+             checkpoint = './model69/LPRChar69.ckpt-63000'
+             saver.restore(session, checkpoint)
+             checkpoint_id = 63000
+             start_epoch = checkpoint_id // BATCHES
+             for curr_epoch in range(start_epoch, start_epoch+num_epochs):
                 print("Epoch.......", curr_epoch)
                 train_cost = train_ler = 0
                 for batch in range(BATCHES):

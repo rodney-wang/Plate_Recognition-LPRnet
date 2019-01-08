@@ -102,7 +102,9 @@ def batch_eval(img_dir, label_file, out_dir):
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
         #saver.restore(session, './model/LPRk110k.ckpt-72000')
         #saver.restore(session, './model/LPRMore.ckpt-48000')
-        saver.restore(session, './model69/LPRChar69.ckpt-63000')
+        #saver.restore(session, './model69/LPRChar69.ckpt-63000')
+        saver.restore(session, './model69/LPRAug.ckpt-96000')
+        #saver.restore(session, './model69/LPRChar69.ckpt-261000')
 
         test_gen = TextImageGeneratorBM(img_dir=img_dir,
                                       label_file=label_file,
@@ -131,7 +133,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Plate end to end test')
     parser.add_argument('--img_dir', default='/ssd/wfei/data/testing_data/wanda_plates_v1.2',
                         type=str, help='Input test image dir')
-    parser.add_argument('--out_dir', default='/ssd/wfei/data/testing_data/wanda_lpr_results69_v1.4',
+    parser.add_argument('--out_dir', default='/ssd/wfei/data/testing_data/wanda_lpr_results69_v1.5',
                         type=str, help='Output image dir')
     parser.add_argument('--label_file', default='/ssd/wfei/data/testing_data/wanda_benchmark_label.json',
                         type=str, help='Output image dir')

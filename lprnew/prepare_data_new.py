@@ -13,6 +13,7 @@ from config_new import CHARS, dict
 # train_csv = "/ssd/wfei/data/ocr_training/20181121_plate_and_label_filtered_crnn6.txt"
 # train_csv = "/ssd/zq/parkinglot_pipeline/carplate/data/20181220_crnn_training_data_label_v1.8e"
 train_csv = "/ssd/zq/parkinglot_pipeline/carplate/data/20181206_crnn_training_data_label_v1.7"
+train_csv = "/ssd/wfei/data/ocr_training/wanda_5K_plates.txt"
 
 # dict_chi = {'A01':'京','A02':'津','A03':'沪','B02':'蒙',
 #         'S01':'皖','S02':'闽','S03':'粤','S04':'甘',
@@ -120,6 +121,7 @@ def batch_benchmark_rename_copy(json_file, src_folder, tgt_folder):
 
 
 tgt_folder = '/ssd/wfei/data/LPR_training/20181206_crnn_data_train_v1.7_new'
+tgt_folder = '/ssd/wfei/data/LPR_training/20190106_lpr_data_train_wanda5000'
 #tgt_folder = '/Users/fei/tmp/test/tgt_folder'
 
 batch_rename_copy(train_csv, tgt_folder)
