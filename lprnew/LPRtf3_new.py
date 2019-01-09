@@ -8,10 +8,10 @@ import random
 from augment_data import augment_data
 from config_new import CHARS, dict, CHARS_DICT, NUM_CHARS
 
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
+os.environ["CUDA_VISIBLE_DEVICES"]="0,1,2,3"
 
 #训练最大轮次
-num_epochs = 400
+num_epochs = 100
 
 #初始化学习速率
 INITIAL_LEARNING_RATE = 1e-3
@@ -24,13 +24,13 @@ REPORT_STEPS = 3000
 
 #训练集的数量
 BATCH_SIZE = 256
-TRAIN_SIZE = 76800 
+TRAIN_SIZE = 95700 
 BATCHES = TRAIN_SIZE//BATCH_SIZE
 test_num = 3
 
 #ti = 'train'         #训练集位置
 #vi = 'valid'         #验证集位
-ti = '/ssd/wfei/data/LPR_training/20181206_crnn_data_train_v1.7_new'         #训练集位置
+ti = '/ssd/wfei/data/LPR_training/20190106_lpr_data_train_wanda5000'         #训练集位置
 vi = '/ssd/wfei/data/LPR_training/20181206_crnn_data_val_v1.7'         #验证集位置
 img_size = [94, 24]
 tl = None
@@ -84,7 +84,8 @@ class TextImageGenerator:
             if filename[-4:] == '.jpg' or filename[-4:] == '.png':
                 label = decode_fname(filename)
                 label = encode_label(label)
-                if len(label) > 7 or len(label) < 6:
+                #if len(label) > 7 or len(label) < 6:
+                if len(label) != 7:
                     continue
                 self.filenames.append(filename)
                 self.labels.append(label)
@@ -414,12 +415,12 @@ def train(a):
         session.run(init)
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
         if a=='train':
-             start_epoch = 0
-             #checkpoint = './model/LPRtf3.ckpt-42000'
-             #saver.restore(session, checkpoint)
-             #checkpoint_id = 42000 
-             #start_epoch = checkpoint_id // BATCHES 
-             for curr_epoch in range(start_epoch, num_epochs):
+             #start_epoch = 0
+             checkpoint = './model69/LPRAug.ckpt-63000'
+             saver.restore(session, checkpoint)
+             checkpoint_id = 63000 
+             start_epoch = checkpoint_id // BATCHES 
+             for curr_epoch in range(start_epoch, start_epoch+num_epochs):
                 print("Epoch.......", curr_epoch)
                 train_cost = train_ler = 0
                 for batch in range(BATCHES):
