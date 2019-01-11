@@ -12,6 +12,7 @@ from TextImageGeneratorBM import TextImageGeneratorBM, report_accuracy, write_oc
 
 from config_new import BATCH_SIZE, img_size, num_channels, label_len, NUM_CHARS
 #from config import BATCH_SIZE, img_size, num_channels, label_len, NUM_CHARS
+#BATCH_SIZE= 256
 import pdb
 os.environ["CUDA_VISIBLE_DEVICES"]="-1"
 
@@ -78,7 +79,7 @@ def main(img_dir, lpr_model):
 def batch_eval(img_dir, label_file, out_dir):
 
     global_step = tf.Variable(0, trainable=False)
-    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len, BATCH_SIZE, img_size)
+    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len, BATCH_SIZE, img_size, False, False)
     logits = tf.transpose(logits, (1, 0, 2))
     # tragets是一个稀疏矩阵
     #decoded, log_prob = tf.nn.ctc_beam_search_decoder(logits, seq_len, merge_repeated=False)
@@ -100,9 +101,10 @@ def batch_eval(img_dir, label_file, out_dir):
     with tf.Session() as session:
         session.run(init)
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
-        saver.restore(session, './model69/LPRAug.ckpt-81000')
-        #saver.restore(session, './model69/LPRChar69.ckpt-63000')
-        #saver.restore(session, './model69/LPRChar69.ckpt-261000')
+        #saver.restore(session, './model69/LPRAug.ckpt-69000')
+        #saver.restore(session, './model69/LPRChar69.ckpt-66000')
+        saver.restore(session, './model69/LPRChar69.ckpt-72000')
+        #saver.restore(session, './modelk11/LPRChar69.ckpt-51000')
 
         test_gen = TextImageGeneratorBM(img_dir=img_dir,
                                       label_file=label_file,

@@ -8,9 +8,9 @@ import random
 from model import get_train_model
 from config_new import CHARS, dict, CHARS_DICT, NUM_CHARS
 
-os.environ["CUDA_VISIBLE_DEVICES"]="1,2,3,4"
+os.environ["CUDA_VISIBLE_DEVICES"]="5,6"
 #训练最大轮次
-num_epochs = 60
+num_epochs = 240
 
 #初始化学习速率
 INITIAL_LEARNING_RATE = 1e-3
@@ -201,7 +201,7 @@ def train(a):
                                                DECAY_STEPS,
                                                LEARNING_RATE_DECAY_FACTOR,
                                                staircase=True)
-    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len,BATCH_SIZE, img_size)
+    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len,BATCH_SIZE, img_size, True, True)
     logits = tf.transpose(logits, (1, 0, 2))
     # tragets是一个稀疏矩阵
     loss = tf.nn.ctc_loss(labels=targets, inputs=logits, sequence_length=seq_len)
@@ -209,7 +209,9 @@ def train(a):
 
     # optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate,momentum=MOMENTUM).minimize(cost, global_step=global_step)
 
-    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss, global_step=global_step)
+    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    with tf.control_dependencies(update_ops):
+        optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss, global_step=global_step)
 
     # 前面说的划分块之后找每块的类属概率分布，ctc_beam_search_decoder方法,是每次找最大的K个概率分布
     # 还有一种贪心策略是只找概率最大那个，也就是K=1的情况ctc_ greedy_decoder
@@ -280,7 +282,7 @@ def train(a):
         #print(b_cost, steps)
         if steps > 0 and steps % REPORT_STEPS == 0:
             do_report(val_gen,test_num)
-            saver.save(session, "./model69/LPRChar69.ckpt", global_step=steps)
+            saver.save(session, "./modelk11/LPRChar69.ckpt", global_step=steps)
         return b_cost, steps
 
     with tf.Session() as session:
@@ -290,7 +292,7 @@ def train(a):
              #start_epoch = 0
              checkpoint = './model69/LPRChar69.ckpt-63000'
              saver.restore(session, checkpoint)
-             checkpoint_id = 63000
+             checkpoint_id = 51000
              start_epoch = checkpoint_id // BATCHES
              for curr_epoch in range(start_epoch, start_epoch+num_epochs):
                 print("Epoch.......", curr_epoch)
