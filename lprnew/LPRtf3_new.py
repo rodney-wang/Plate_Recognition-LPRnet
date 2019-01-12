@@ -5,13 +5,14 @@ import cv2
 import os
 import re
 import random
+from model import get_train_model
 from augment_data import augment_data
 from config_new import CHARS, dict, CHARS_DICT, NUM_CHARS
 
-os.environ["CUDA_VISIBLE_DEVICES"]="0,1,2,3"
+os.environ["CUDA_VISIBLE_DEVICES"]="0,1,2"
 
 #训练最大轮次
-num_epochs = 100
+num_epochs = 240
 
 #初始化学习速率
 INITIAL_LEARNING_RATE = 1e-3
@@ -24,13 +25,14 @@ REPORT_STEPS = 3000
 
 #训练集的数量
 BATCH_SIZE = 256
-TRAIN_SIZE = 95700 
+TRAIN_SIZE = 79552
 BATCHES = TRAIN_SIZE//BATCH_SIZE
 test_num = 3
 
 #ti = 'train'         #训练集位置
 #vi = 'valid'         #验证集位
-ti = '/ssd/wfei/data/LPR_training/20190106_lpr_data_train_wanda5000'         #训练集位置
+#ti = '/ssd/wfei/data/LPR_training/20190106_lpr_data_train_wanda5000'         #训练集位置
+ti = '/ssd/wfei/data/LPR_training/20181206_crnn_data_train_v1.7_new'         #训练集位置
 vi = '/ssd/wfei/data/LPR_training/20181206_crnn_data_val_v1.7'         #验证集位置
 img_size = [94, 24]
 tl = None
@@ -198,116 +200,6 @@ def conv(x,im,om,ksize,stride=[1,1,1,1],pad = 'SAME'):
     relu = tf.nn.bias_add(out, conv_biases)
     return relu
 
-def get_train_model(num_channels, label_len, b, img_size):
-    inputs = tf.placeholder(
-        tf.float32,
-        shape=(b, img_size[0], img_size[1], num_channels))
-
-    # 定义ctc_loss需要的稀疏矩阵
-    targets = tf.sparse_placeholder(tf.int32)
-
-    # 1维向量 序列长度 [batch_size,]
-    seq_len = tf.placeholder(tf.int32, [None])
-    x = inputs
-
-    x = conv(x,num_channels,64,ksize=[3,3])
-    x = tf.layers.batch_normalization(x)
-    x = tf.nn.relu(x)
-    x = tf.nn.max_pool(x,
-                          ksize=[1, 3, 3, 1],
-                          strides=[1, 1, 1, 1],
-                          padding='SAME')
-    x = small_basic_block(x,64,64)
-    x2=x
-    x = tf.layers.batch_normalization(x)
-    x = tf.nn.relu(x)
-
-    x = tf.nn.max_pool(x,
-                          ksize=[1, 3, 3, 1],
-                          strides=[1, 2, 1, 1],
-                          padding='SAME')
-    x = small_basic_block(x, 64,256)
-    x = tf.layers.batch_normalization(x)
-    x = tf.nn.relu(x)
-    x = small_basic_block(x, 256, 256)
-    x3 = x
-    x = tf.layers.batch_normalization(x)
-
-    x = tf.nn.relu(x)
-    x = tf.nn.max_pool(x,
-                       ksize=[1, 3, 3, 1],
-                       strides=[1, 2, 1, 1],
-                       padding='SAME')
-    x = tf.layers.dropout(x)
-
-    x = conv(x, 256, 256, ksize=[4, 1])
-    x = tf.layers.dropout(x)
-    x = tf.layers.batch_normalization(x)
-    x = tf.nn.relu(x)
-
-
-    x = conv(x,256,NUM_CHARS+1,ksize=[1,13],pad='SAME')
-    x = tf.nn.relu(x)
-    cx = tf.reduce_mean(tf.square(x))
-    x = tf.div(x,cx)
-
-    #x = tf.reduce_mean(x,axis = 2)
-    #x1 = conv(inputs,num_channels,num_channels,ksize = (5,1))
-
-
-    x1 = tf.nn.avg_pool(inputs,
-                       ksize=[1, 4, 1, 1],
-                       strides=[1, 4, 1, 1],
-                       padding='SAME')
-    cx1 = tf.reduce_mean(tf.square(x1))
-    x1 = tf.div(x1, cx1)
-
-    # x1 = tf.image.resize_images(x1, size = [18, 16], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
-
-    x2 = tf.nn.avg_pool(x2,
-                        ksize=[1, 4, 1, 1],
-                        strides=[1, 4, 1, 1],
-                        padding='SAME')
-    cx2 = tf.reduce_mean(tf.square(x2))
-    x2 = tf.div(x2, cx2)
-
-    #x2 = tf.image.resize_images(x2, size=[18, 16], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
-
-    x3 = tf.nn.avg_pool(x3,
-                        ksize=[1, 2, 1, 1],
-                        strides=[1, 2, 1, 1],
-                        padding='SAME')
-    cx3 = tf.reduce_mean(tf.square(x3))
-    x3 = tf.div(x3, cx3)
-
-    #x3 = tf.image.resize_images(x3, size=[18, 16], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
-
-
-    #x1 = tf.nn.relu(x1)
-
-    x = tf.concat([x,x1,x2,x3],3)
-    x = conv(x, x.get_shape().as_list()[3], NUM_CHARS + 1, ksize=(1, 1))
-    logits = tf.reduce_mean(x,axis=2)
-    # x_shape = x.get_shape().as_list()
-    # outputs = tf.reshape(x, [-1,x_shape[2]*x_shape[3]])
-    # W1 = tf.Variable(tf.truncated_normal([x_shape[2]*x_shape[3],
-    #                                      150],
-    #                                     stddev=0.1))
-    # b1 = tf.Variable(tf.constant(0., shape=[150]))
-    # # [batch_size*max_timesteps,num_classes]
-    # x = tf.matmul(outputs, W1) + b1
-    # x= tf.layers.dropout(x)
-    # x = tf.nn.relu(x)
-    # W2 = tf.Variable(tf.truncated_normal([150,
-    #                                      NUM_CHARS+1],
-    #                                     stddev=0.1))
-    # b2 = tf.Variable(tf.constant(0., shape=[NUM_CHARS+1]))
-    # x = tf.matmul(x, W2) + b2
-    # x = tf.layers.dropout(x)
-    # # [batch_size,max_timesteps,num_classes]
-    # logits = tf.reshape(x, [b, -1, NUM_CHARS+1])
-
-    return logits, inputs, targets, seq_len
 
 def train(a):
 
@@ -330,18 +222,20 @@ def train(a):
                                                DECAY_STEPS,
                                                LEARNING_RATE_DECAY_FACTOR,
                                                staircase=True)
-    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len,BATCH_SIZE, img_size)
+    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len,BATCH_SIZE, img_size, True, True)
     logits = tf.transpose(logits, (1, 0, 2))
     # tragets是一个稀疏矩阵
     loss = tf.nn.ctc_loss(labels=targets, inputs=logits, sequence_length=seq_len)
     cost = tf.reduce_mean(loss)
 
     # optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate,momentum=MOMENTUM).minimize(cost, global_step=global_step)
-    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss, global_step=global_step)
+    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    with tf.control_dependencies(update_ops):
+        optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss, global_step=global_step)
 
     # 前面说的划分块之后找每块的类属概率分布，ctc_beam_search_decoder方法,是每次找最大的K个概率分布
     # 还有一种贪心策略是只找概率最大那个，也就是K=1的情况ctc_ greedy_decoder
-    decoded, log_prob = tf.nn.ctc_beam_search_decoder(logits, seq_len, merge_repeated=False)
+    decoded, log_prob = tf.nn.ctc_beam_search_decoder(logits, seq_len, merge_repeated=False, top_paths=3)
 
     acc = tf.reduce_mean(tf.edit_distance(tf.cast(decoded[0], tf.int32), targets))
 
@@ -408,18 +302,18 @@ def train(a):
         #print(b_cost, steps)
         if steps > 0 and steps % REPORT_STEPS == 0:
             do_report(val_gen,test_num)
-            saver.save(session, "./model69/LPRAug.ckpt", global_step=steps)
+            saver.save(session, "./modelk11/LPRAug.ckpt", global_step=steps)
         return b_cost, steps
 
     with tf.Session() as session:
         session.run(init)
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
         if a=='train':
-             #start_epoch = 0
-             checkpoint = './model69/LPRAug.ckpt-63000'
-             saver.restore(session, checkpoint)
-             checkpoint_id = 63000 
-             start_epoch = checkpoint_id // BATCHES 
+             start_epoch = 0
+             #checkpoint = './modelk11/LPRAug.ckpt-63000'
+             #saver.restore(session, checkpoint)
+             #checkpoint_id = 63000
+             #start_epoch = checkpoint_id // BATCHES
              for curr_epoch in range(start_epoch, start_epoch+num_epochs):
                 print("Epoch.......", curr_epoch)
                 train_cost = train_ler = 0

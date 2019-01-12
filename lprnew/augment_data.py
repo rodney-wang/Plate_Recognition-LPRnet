@@ -57,11 +57,11 @@ def augment_data(image):
 
     image = random_padding(image)
 
-    bright = np.random.randint(-100, 100) #typically between [-127, 127]
-    contrast = np.random.randint(-50, 50) #typically between [-64, 64]
+    bright = np.random.randint(-120, 120) #typically between [-127, 127]
+    contrast = np.random.randint(-60, 60) #typically between [-64, 64]
     apply_brightness_contrast(image, bright, contrast)
 
-    image = ndimage.rotate(image, (np.random.rand()-0.5)*10)   #random rotate -5 to 5 degree
+    image = ndimage.rotate(image, (np.random.rand()-0.5)*15)   #random rotate -5 to 5 degree
 
     return image
 
