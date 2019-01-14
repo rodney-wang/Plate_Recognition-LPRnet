@@ -24,7 +24,9 @@ BATCH_SIZE = 1
 test_seq_len = tf.ones(BATCH_SIZE) * 24
 
 MODEL_DIR = './model_pb'
-MODEL_CKPT = './model69/LPRChar69.ckpt-63000'
+#MODEL_CKPT = './model69/LPRChar69.ckpt-63000'
+#MODEL_CKPT = './model69/LPRAug.ckpt-63000'
+MODEL_CKPT = './modelk11/LPRChar69.ckpt-63000'
 
 tf.reset_default_graph()
 eval_graph = tf.Graph()
@@ -37,7 +39,7 @@ with tf.Session(config=config, graph=eval_graph) as sess:
 
     global_step = tf.Variable(0, trainable=False)
 
-    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len, BATCH_SIZE, img_size)
+    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len, BATCH_SIZE, img_size, False, False)
 
     logits = tf.transpose(logits, (1, 0, 2), name='logits_transpose')
     decoded, log_prob = tf.nn.ctc_beam_search_decoder(logits, seq_len,
@@ -58,6 +60,7 @@ with tf.Session(config=config, graph=eval_graph) as sess:
                 'confidence_score': score}
 
     saver = tf.train.Saver(tf.global_variables(), max_to_keep=4)
+    print tf.global_variables()
     #saver = tf.train.import_meta_graph(MODEL_CKPT + '.meta', clear_devices=True)
     saver.restore(sess, MODEL_CKPT)
 

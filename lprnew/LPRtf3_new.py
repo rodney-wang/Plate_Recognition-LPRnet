@@ -9,10 +9,10 @@ from model import get_train_model
 from augment_data import augment_data
 from config_new import CHARS, dict, CHARS_DICT, NUM_CHARS
 
-os.environ["CUDA_VISIBLE_DEVICES"]="0,1,2"
+os.environ["CUDA_VISIBLE_DEVICES"]="0,1,2,3"
 
 #训练最大轮次
-num_epochs = 240
+num_epochs = 80
 
 #初始化学习速率
 INITIAL_LEARNING_RATE = 1e-3
@@ -309,11 +309,11 @@ def train(a):
         session.run(init)
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
         if a=='train':
-             start_epoch = 0
-             #checkpoint = './modelk11/LPRAug.ckpt-63000'
-             #saver.restore(session, checkpoint)
-             #checkpoint_id = 63000
-             #start_epoch = checkpoint_id // BATCHES
+             #start_epoch = 0
+             checkpoint = './modelk11/LPRAug.ckpt-72000'
+             saver.restore(session, checkpoint)
+             checkpoint_id = 72000
+             start_epoch = checkpoint_id // BATCHES
              for curr_epoch in range(start_epoch, start_epoch+num_epochs):
                 print("Epoch.......", curr_epoch)
                 train_cost = train_ler = 0

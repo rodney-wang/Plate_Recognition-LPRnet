@@ -51,13 +51,16 @@ class TextImageGeneratorBM:
         self._num_batches = self._num_examples//self._batch_size +1
 
     def next_batch(self):
+        """
         # Shuffle the data
         if self._next_index == 0:
             perm = np.arange(self._num_examples)
             np.random.shuffle(perm)
             self._filenames = [self.filenames[i] for i in perm]
             self._labels = self.labels[perm]
-
+        """
+        self._filenames = self.filenames
+        self._labels = self.labels
         batch_size = self._batch_size
         start = self._next_index
         end = self._next_index + batch_size
