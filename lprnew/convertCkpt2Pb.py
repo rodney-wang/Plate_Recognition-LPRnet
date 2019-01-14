@@ -26,7 +26,8 @@ test_seq_len = tf.ones(BATCH_SIZE) * 24
 MODEL_DIR = './model_pb'
 #MODEL_CKPT = './model69/LPRChar69.ckpt-63000'
 #MODEL_CKPT = './model69/LPRAug.ckpt-63000'
-MODEL_CKPT = './modelk11/LPRChar69.ckpt-63000'
+#MODEL_CKPT = './modelk11/LPRChar69.ckpt-63000'
+MODEL_CKPT = './modelk11/LPRAug.ckpt-78000'
 
 tf.reset_default_graph()
 eval_graph = tf.Graph()
