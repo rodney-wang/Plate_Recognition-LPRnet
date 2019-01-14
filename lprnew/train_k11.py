@@ -289,11 +289,11 @@ def train(a):
         session.run(init)
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
         if a=='train':
-             #start_epoch = 0
-             checkpoint = './model69/LPRChar69.ckpt-63000'
-             saver.restore(session, checkpoint)
-             checkpoint_id = 51000
-             start_epoch = checkpoint_id // BATCHES
+             start_epoch = 0
+             #checkpoint = './model69/LPRChar69.ckpt-63000'
+             #saver.restore(session, checkpoint)
+             #checkpoint_id = 51000
+             #start_epoch = checkpoint_id // BATCHES
              for curr_epoch in range(start_epoch, start_epoch+num_epochs):
                 print("Epoch.......", curr_epoch)
                 train_cost = train_ler = 0
