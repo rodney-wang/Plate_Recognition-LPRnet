@@ -8,7 +8,8 @@ import glob
 import tensorflow as tf
 import time
 from model import get_train_model
-from TextImageGeneratorBM import TextImageGeneratorBM, report_accuracy, write_ocr
+from decode_tensor import decode_tensor
+from TextImageGeneratorBM import TextImageGeneratorBM, report_accuracy, write_ocr, report_accuracy_predict
 
 from config_new import BATCH_SIZE, img_size, num_channels, label_len, NUM_CHARS
 #from config import BATCH_SIZE, img_size, num_channels, label_len, NUM_CHARS
@@ -92,7 +93,8 @@ def batch_eval(img_dir, label_file, out_dir):
                                                       merge_repeated=False,
                                                       beam_width=100,
                                                       top_paths=3)
-    score = tf.subtract(log_prob[:, 0], log_prob[:, 1], name='score_computation')
+    plate_predict = decode_tensor(decoded[0])
+    score = tf.subtract(log_prob[:, 0], log_prob[:, 1], name='confidence_score')
 
     acc = tf.reduce_mean(tf.edit_distance(tf.cast(decoded[0], tf.int32), targets))
 
@@ -123,11 +125,11 @@ def batch_eval(img_dir, label_file, out_dir):
                          #targets: test_targets,
                          seq_len: test_seq_len}
             st = time.time()
-            [dd, probs, scores] = session.run([decoded[0], log_prob, score], test_feed)
+            [pp, dd, probs, scores] = session.run([plate_predict, decoded[0], log_prob, score], test_feed)
             tim = time.time() - st
             print('time:%s' % tim)
             #print(scores)
-            detected_list = report_accuracy(dd, test_targets, scores)
+            detected_list = report_accuracy_predict(pp, test_targets, scores)
             write_ocr(detected_list, scores, img_names, out_dir)
 
 

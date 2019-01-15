@@ -174,6 +174,30 @@ def report_accuracy(decoded_list, test_targets, scores):
 
     return detected_list
 
+
+def report_accuracy_predict(predicts, test_targets, scores):
+    original_list = decode_sparse_tensor(test_targets)
+    #detected_list = decode_sparse_tensor(decoded_list)
+    true_numer = 0
+
+    if len(original_list) != len(predicts):
+        print("len(original_list)", len(original_list), "len(detected_list)", len(predicts),
+              " test and detect length doesn't match")
+        return
+    print("T/F: original(length) <-------> detectcted(length)")
+    for idx, number in enumerate(original_list):
+        detect_number = predicts[idx]
+        hit = (number == detect_number)
+        gt = ''.join(number).decode('utf-8')
+        detect = ''.join(detect_number).decode('utf-8')
+        if not hit:
+            print hit, gt, "(", len(number), ") <-------> ", detect, "(", len(detect_number), ")", scores[idx]
+        if hit:
+            true_numer = true_numer + 1
+    print("Test Accuracy:", true_numer * 1.0 / len(original_list))
+
+    return predicts
+
 def write_ocr(detected_list, scores, filenames, out_dir):
     """
     Write output to the individual files so that precision and recall numbers can be evaluated
