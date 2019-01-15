@@ -2,6 +2,7 @@
 from collections import OrderedDict
 import tensorflow as tf
 from config_new import CHARS, CHARS_DICT
+import numpy as np
 
 # def get_words_from_chars(characters_list: List[str], sequence_lengths: List[int], name='chars_conversion'):
 #     with tf.name_scope(name=name):
@@ -29,10 +30,12 @@ def decode_tensor(sparse_code):
 
     with tf.name_scope('code2str_conversion'):
         chars_dict_sorted = OrderedDict(sorted(CHARS_DICT.items(), key=lambda x: x[1]))
-        chars_dict_sorted = {k.decode("utf-8"):v for k, v in chars_dict_sorted.iteritems()}
+        #chars_dict_sorted = {k.decode("utf-8"):v for k, v in chars_dict_sorted.iteritems()}
+        chars_dict_sorted = {k:v for k, v in chars_dict_sorted.items()}
 
-        codes = chars_dict_sorted.values()
+        codes = list(chars_dict_sorted.values())
         alphabet_units = chars_dict_sorted.keys()
+        #print(alphabet_units.encode('utf-8'))
         keys_alphabet_codes = tf.cast(codes, tf.int64)
         values_alphabet_units = [c for c in alphabet_units]
         table_int2str = tf.contrib.lookup.HashTable(

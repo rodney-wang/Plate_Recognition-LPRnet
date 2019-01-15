@@ -11,7 +11,7 @@ from config_new import CHARS, dict, CHARS_DICT, NUM_CHARS
 
 os.environ["CUDA_VISIBLE_DEVICES"]="5,6"
 #训练最大轮次
-num_epochs = 240
+num_epochs = 100
 
 #初始化学习速率
 INITIAL_LEARNING_RATE = 1e-3
@@ -248,7 +248,8 @@ def train(a):
             test_inputs, test_targets, test_seq_len = val_gen.next_batch()
             test_feed = {inputs: test_inputs,
                         targets: test_targets,
-                        seq_len: test_seq_len}
+                        seq_len: test_seq_len,
+                        isTraining: True}
             st =time.time()
             dd= session.run(decoded[0], test_feed)
             tim = time.time() -st
@@ -263,7 +264,8 @@ def train(a):
             test_inputs, test_targets, test_seq_len = val_gen.next_batch()
             test_feed = {inputs: test_inputs,
                         targets: test_targets,
-                        seq_len: test_seq_len}
+                        seq_len: test_seq_len,
+                        isTraining: True}
             dd = session.run([decoded[0]], test_feed)
             original_list = decode_sparse_tensor(test_targets)
             detected_list = decode_sparse_tensor(dd)
@@ -278,7 +280,7 @@ def train(a):
     def do_batch(train_gen,val_gen):
         train_inputs, train_targets, train_seq_len = train_gen.next_batch()
 
-        feed = {inputs: train_inputs, targets: train_targets, seq_len: train_seq_len}
+        feed = {inputs: train_inputs, targets: train_targets, seq_len: train_seq_len, isTraining:True}
 
         b_loss, b_targets, b_logits, b_seq_len, b_cost, steps, _ = session.run(
             [loss, targets, logits, seq_len, cost, global_step, optimizer], feed)
@@ -294,9 +296,9 @@ def train(a):
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
         if a=='train':
              #start_epoch = 0
-             checkpoint = './model69/LPRChar69.ckpt-63000'
+             checkpoint = './modelk11/LPRAug.ckpt-78000'
              saver.restore(session, checkpoint)
-             checkpoint_id = 63000
+             checkpoint_id = 0 
              start_epoch = checkpoint_id // BATCHES
              for curr_epoch in range(start_epoch, start_epoch+num_epochs):
                 print("Epoch.......", curr_epoch)
