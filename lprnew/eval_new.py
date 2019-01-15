@@ -105,7 +105,7 @@ def batch_eval(img_dir, label_file, out_dir):
         #saver.restore(session, './model69/LPRChar69.ckpt-66000')
         #saver.restore(session, './model69/LPRChar69.ckpt-81000')
         #saver.restore(session, './modelk11/LPRChar69.ckpt-63000')
-        saver.restore(session, './modelk11/LPRChar69.ckpt-99000')
+        saver.restore(session, './modelk11/LPRChar69.ckpt-96000')
         #saver.restore(session, './modelk11/LPRAug.ckpt-78000')
         #saver.restore(session, './modelk11/LPRAug.ckpt-90000')
 
@@ -121,8 +121,7 @@ def batch_eval(img_dir, label_file, out_dir):
             test_inputs, test_targets, test_seq_len, img_names = test_gen.next_batch()
             test_feed = {inputs: test_inputs,
                          #targets: test_targets,
-                         seq_len: test_seq_len，
-                         is}
+                         seq_len: test_seq_len}
             st = time.time()
             [dd, probs, scores] = session.run([decoded[0], log_prob, score], test_feed)
             tim = time.time() - st
