@@ -121,8 +121,7 @@ def batch_eval(img_dir, label_file, out_dir):
             test_inputs, test_targets, test_seq_len, img_names = test_gen.next_batch()
             test_feed = {inputs: test_inputs,
                          #targets: test_targets,
-                         seq_len: test_seq_len，
-                         is}
+                         seq_len: test_seq_len}
             st = time.time()
             [dd, probs, scores] = session.run([decoded[0], log_prob, score], test_feed)
             tim = time.time() - st
