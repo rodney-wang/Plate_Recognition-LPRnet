@@ -6,6 +6,7 @@ import os
 import re
 import random
 from model import get_train_model
+from decode_tensor import decode_tensor
 from config_new import CHARS, dict, CHARS_DICT, NUM_CHARS
 
 os.environ["CUDA_VISIBLE_DEVICES"]="5,6"
@@ -23,13 +24,13 @@ REPORT_STEPS = 3000
 
 #训练集的数量
 BATCH_SIZE = 256
-TRAIN_SIZE = 87075 
+TRAIN_SIZE = 79530
 BATCHES = TRAIN_SIZE//BATCH_SIZE
 test_num = 3
 
-#ti = '/ssd/wfei/data/LPR_training/20181206_crnn_data_train_v1.7_new'         #训练集位置
+ti = '/ssd/wfei/data/LPR_training/20181206_crnn_data_train_v1.7_new'         #训练集位置
 #ti = '/ssd/wfei/data/LPR_training/20190106_lpr_data_train_wanda5000'         #训练集位置
-ti = '/ssd/wfei/data/LPR_training/20190110_lpr_data_train_k11_5000'         #训练集位置
+#ti = '/ssd/wfei/data/LPR_training/20190110_lpr_data_train_k11_5000'         #训练集位置
 vi = '/ssd/wfei/data/LPR_training/20181206_crnn_data_val_v1.7'         #验证集位置
 img_size = [94, 24]
 tl = None
@@ -201,7 +202,8 @@ def train(a):
                                                DECAY_STEPS,
                                                LEARNING_RATE_DECAY_FACTOR,
                                                staircase=True)
-    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len,BATCH_SIZE, img_size, True, True)
+    isTraining = tf.placeholder(tf.bool, name="is_train")
+    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len,BATCH_SIZE, img_size, isTraining, True)
     logits = tf.transpose(logits, (1, 0, 2))
     # tragets是一个稀疏矩阵
     loss = tf.nn.ctc_loss(labels=targets, inputs=logits, sequence_length=seq_len)
@@ -216,6 +218,8 @@ def train(a):
     # 前面说的划分块之后找每块的类属概率分布，ctc_beam_search_decoder方法,是每次找最大的K个概率分布
     # 还有一种贪心策略是只找概率最大那个，也就是K=1的情况ctc_ greedy_decoder
     decoded, log_prob = tf.nn.ctc_beam_search_decoder(logits, seq_len, merge_repeated=False, top_paths=3)
+    plate_predict = decode_tensor(decoded[0])
+    score = tf.subtract(log_prob[:, 0], log_prob[:, 1], name='confidence_score')
 
     acc = tf.reduce_mean(tf.edit_distance(tf.cast(decoded[0], tf.int32), targets))
 
@@ -289,11 +293,11 @@ def train(a):
         session.run(init)
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
         if a=='train':
-             start_epoch = 0
-             #checkpoint = './model69/LPRChar69.ckpt-63000'
-             #saver.restore(session, checkpoint)
-             #checkpoint_id = 51000
-             #start_epoch = checkpoint_id // BATCHES
+             #start_epoch = 0
+             checkpoint = './model69/LPRChar69.ckpt-63000'
+             saver.restore(session, checkpoint)
+             checkpoint_id = 63000
+             start_epoch = checkpoint_id // BATCHES
              for curr_epoch in range(start_epoch, start_epoch+num_epochs):
                 print("Epoch.......", curr_epoch)
                 train_cost = train_ler = 0
@@ -311,7 +315,8 @@ def train(a):
                     train_inputs, train_targets, train_seq_len = val_gen.next_batch()
                     val_feed = {inputs: train_inputs,
                                 targets: train_targets,
-                                seq_len: train_seq_len}
+                                seq_len: train_seq_len,
+                                isTraining: True}
 
                     val_cost, val_ler, lr, steps = session.run([cost, acc, learning_rate, global_step], feed_dict=val_feed)
                     val_cs+=val_cost
