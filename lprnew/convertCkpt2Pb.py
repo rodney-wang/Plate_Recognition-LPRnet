@@ -40,7 +40,7 @@ with tf.Session(config=config, graph=eval_graph) as sess:
 
     global_step = tf.Variable(0, trainable=False)
 
-    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len, BATCH_SIZE, img_size, False, False)
+    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len, BATCH_SIZE, img_size, False, True)
 
     logits = tf.transpose(logits, (1, 0, 2), name='logits_transpose')
     decoded, log_prob = tf.nn.ctc_beam_search_decoder(logits, seq_len,
