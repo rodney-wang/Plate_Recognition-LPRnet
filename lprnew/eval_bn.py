@@ -13,7 +13,7 @@ from TextImageGeneratorBM import TextImageGeneratorBM, report_accuracy, write_oc
 
 from config_new import BATCH_SIZE, img_size, num_channels, label_len, NUM_CHARS
 #from config import BATCH_SIZE, img_size, num_channels, label_len, NUM_CHARS
-#BATCH_SIZE= 256
+BATCH_SIZE= 1 
 import pdb
 os.environ["CUDA_VISIBLE_DEVICES"]="-1"
 
@@ -80,7 +80,8 @@ def main(img_dir, lpr_model):
 def batch_eval(img_dir, label_file, out_dir):
 
     global_step = tf.Variable(0, trainable=False)
-    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len, BATCH_SIZE, img_size, False, False)
+    isTraining = tf.placeholder(tf.bool, name="is_train") 
+    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len, BATCH_SIZE, img_size, isTraining, False)
     logits = tf.transpose(logits, (1, 0, 2))
     # tragets是一个稀疏矩阵
     #decoded, log_prob = tf.nn.ctc_beam_search_decoder(logits, seq_len, merge_repeated=False)
@@ -91,7 +92,7 @@ def batch_eval(img_dir, label_file, out_dir):
     #decoded, log_prob = tf.nn.ctc_beam_search_decoder(logits, seq_len, merge_repeated=False)
     decoded, log_prob = tf.nn.ctc_beam_search_decoder(logits,seq_len,
                                                       merge_repeated=False,
-                                                      beam_width=100,
+                                                      #beam_width=100,
                                                       top_paths=3)
     plate_predict = decode_tensor(decoded[0])
     score = tf.subtract(log_prob[:, 0], log_prob[:, 1], name='confidence_score')
@@ -102,12 +103,13 @@ def batch_eval(img_dir, label_file, out_dir):
 
     with tf.Session() as session:
         session.run(init)
+        session.run(tf.tables_initializer())
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
         #saver.restore(session, './model69/LPRAug.ckpt-63000')
         #saver.restore(session, './model69/LPRChar69.ckpt-66000')
         #saver.restore(session, './model69/LPRChar69.ckpt-81000')
         #saver.restore(session, './modelk11/LPRChar69.ckpt-63000')
-        saver.restore(session, './modelk11/LPRChar69.ckpt-99000')
+        saver.restore(session, './modelk11/LPRChar69.ckpt-96000')
         #saver.restore(session, './modelk11/LPRAug.ckpt-78000')
         #saver.restore(session, './modelk11/LPRAug.ckpt-90000')
 
@@ -123,13 +125,15 @@ def batch_eval(img_dir, label_file, out_dir):
             test_inputs, test_targets, test_seq_len, img_names = test_gen.next_batch()
             test_feed = {inputs: test_inputs,
                          #targets: test_targets,
-                         seq_len: test_seq_len}
+                         seq_len: test_seq_len, 
+                         isTraining: False}
+
             st = time.time()
             [pp, dd, probs, scores] = session.run([plate_predict, decoded[0], log_prob, score], test_feed)
             tim = time.time() - st
             print('time:%s' % tim)
             #print(scores)
-            detected_list = report_accuracy_predict(pp, test_targets, scores)
+            detected_list = report_accuracy(dd, test_targets, scores)
             write_ocr(detected_list, scores, img_names, out_dir)
 
 

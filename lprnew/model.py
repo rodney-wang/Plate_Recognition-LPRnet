@@ -25,7 +25,8 @@ def conv(x,im,om,ksize,stride=[1,1,1,1],pad = 'SAME'):
 def get_train_model(num_channels, label_len, b, img_size, training=False, trainable=True):
     inputs = tf.placeholder(
         tf.float32,
-        shape=(b, img_size[0], img_size[1], num_channels))
+        shape=(None, img_size[0], img_size[1], num_channels))
+        #shape=(b, img_size[0], img_size[1], num_channels))
 
     # 定义ctc_loss需要的稀疏矩阵
     targets = tf.sparse_placeholder(tf.int32)

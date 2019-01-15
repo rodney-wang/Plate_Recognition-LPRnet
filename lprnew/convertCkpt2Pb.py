@@ -41,11 +41,12 @@ with tf.Session(config=config, graph=eval_graph) as sess:
     global_step = tf.Variable(0, trainable=False)
 
     isTraining = tf.placeholder(tf.bool, name="is_train")
-    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len, BATCH_SIZE, img_size, isTraining, True)
+    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len, BATCH_SIZE, img_size, isTraining, False)
 
     logits = tf.transpose(logits, (1, 0, 2), name='logits_transpose')
 
-    decoded, log_prob = tf.nn.ctc_beam_search_decoder(logits, seq_len, merge_repeated=False, beam_width=100, top_paths=3)
+    #decoded, log_prob = tf.nn.ctc_beam_search_decoder(logits, seq_len, merge_repeated=False, beam_width=100, top_paths=3)
+    decoded, log_prob = tf.nn.ctc_beam_search_decoder(logits, seq_len, merge_repeated=False, top_paths=3)
     plate_predict = decode_tensor(decoded[0])
     score = tf.subtract(log_prob[:, 0], log_prob[:, 1], name='confidence_score')
     # feed_dict = {"inputs": inputs,

@@ -105,7 +105,7 @@ def batch_eval(img_dir, label_file, out_dir):
         #saver.restore(session, './model69/LPRChar69.ckpt-66000')
         #saver.restore(session, './model69/LPRChar69.ckpt-81000')
         #saver.restore(session, './modelk11/LPRChar69.ckpt-63000')
-        saver.restore(session, './modelk11/LPRChar69.ckpt-96000')
+        saver.restore(session, './modelk11/LPRChar69.ckpt-90000')
         #saver.restore(session, './modelk11/LPRAug.ckpt-78000')
         #saver.restore(session, './modelk11/LPRAug.ckpt-90000')
 

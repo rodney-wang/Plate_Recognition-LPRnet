@@ -21,7 +21,7 @@ def run_crnn_and_write_result(plate_file, out_dir, predict_fn):
         print('File does not exist')
         return
     img = cv2.imread(plate_file)
-    print img.shape
+    #print img.shape
     img = cv2.resize(img, (94, 24), interpolation=cv2.INTER_CUBIC)
     images = img[np.newaxis, :]
     images = np.transpose(images, axes=[0, 2, 1, 3])
@@ -43,7 +43,7 @@ def run_crnn_and_write_result(plate_file, out_dir, predict_fn):
         out_file = os.path.join(out_dir, fname)
 
         out_str = ' '.join([chars, str(score)])
-        print(out_str.encode('utf-8'))
+        print(fname, out_str.encode('utf-8'))
         #with open(out_file, 'w', encoding='utf-8') as ff:
         with open(out_file, 'w') as ff:
             ff.write(out_str.encode('utf-8'))
