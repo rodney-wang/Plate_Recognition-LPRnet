@@ -40,8 +40,8 @@ with tf.Session(config=config, graph=eval_graph) as sess:
 
     global_step = tf.Variable(0, trainable=False)
 
-    #isTraining = tf.placeholder(tf.bool, name="is_train")
-    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len, BATCH_SIZE, img_size, False, True)
+    isTraining = tf.placeholder(tf.bool, name="is_train")
+    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len, BATCH_SIZE, img_size, isTraining, True)
 
     logits = tf.transpose(logits, (1, 0, 2), name='logits_transpose')
 
@@ -51,8 +51,8 @@ with tf.Session(config=config, graph=eval_graph) as sess:
     # feed_dict = {"inputs": inputs,
     #             "seq_len": test_seq_len}
     ipt = {"Placeholder": inputs,
-           "Placeholder_4":seq_len}#,
-           #"is_train": False}
+           "Placeholder_4":seq_len,
+           "is_train": isTraining}
 
     outputs = { 'code2str_conversion/predicted':plate_predict,
                 'confidence_score': score}

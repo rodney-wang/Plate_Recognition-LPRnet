@@ -27,7 +27,8 @@ def run_crnn_and_write_result(plate_file, out_dir, predict_fn):
     images = np.transpose(images, axes=[0, 2, 1, 3])
 
     inputs = {"Placeholder": images,
-              "Placeholder_4": [24]}
+              "Placeholder_4": [24],
+              "is_train": False}
 
     predictions = predict_fn(inputs)
     print "Prediction:      ", predictions['code2str_conversion/predicted'][0].decode('utf-8')
