@@ -42,6 +42,37 @@ def write_plate_label_to_json(img_path, out_dir):
         json.dump(plate_label, f)
     print 'Plate label written to : ', out_json
 
+def write_crnn_training_file(txt_path):
+    """
+    Write benchmark plate label to a json file
+    """
+
+    list_file = '/ssd/wfei/data/testing_data/k11_benchmark_crnn_format_list.txt'
+    fout = open(list_file, 'w')
+
+    plate_folder = '/ssd/wfei/data/testing_data/k11_plates_v1.2'
+    input_folder = glob.glob(txt_path + '/*.txt')
+
+    for i, txt_name in enumerate(input_folder):
+        bname = os.path.basename(txt_name)
+        print 'Processing ', i, bname
+
+        plate_name = bname.replace('.txt', '.jpg') + '_plate.png'
+        plate_path = os.path.join(plate_folder, plate_name)
+
+        fo = open(txt_name, "r")
+        line = fo.readline()
+        chars = line.split(',')[-1].strip()
+
+        out_line = plate_path + ';'
+        out_label = '|'.join(chars)
+        out_label = '|' + out_label + '|'
+
+        print(out_line, out_label)
+        out_line += out_label.encode('utf-8') + '\n'
+        fout.write(out_line)
+    fout.close()
+    print 'Plate label written to : ', list_file
 
 def write_plate_image(img_path, json_path, out_dir):
 
@@ -97,10 +128,12 @@ if __name__ == '__main__':
     out_dir  ='/Users/fei/data/parking/carplate/testing_data/wanda_benchmark/'
     img_path = '/Users/fei/data/parking/carplate/testing_data/k11_benchmark/car_crop'
     out_dir = '/Users/fei/data/parking/carplate/testing_data/k11_benchmark/'
+    img_dir = '/Users/fei/data/parking/carplate/testing_data/wanda_benchmark/image_data'
 
     args = parse_args()
-    write_plate_label_to_json(args.img_dir, args.out_dir)
-    #write_plate_image(img_path, json_path_corner, out_dir)
+    write_crnn_training_file(args.img_dir)
+    #write_plate_label_to_json(args.img_dir, args.out_dir)
+    #write_plate_image(args.img_path, args.json_path_corner, args.out_dir)
 
     # To run it on K11 data
     #python benchmark_label.py --image_dir /ssd/zq/parkinglot_pipeline/carplate/test_data/image_data
