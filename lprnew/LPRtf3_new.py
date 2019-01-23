@@ -12,7 +12,7 @@ from config_new import CHARS, dict, CHARS_DICT, NUM_CHARS
 os.environ["CUDA_VISIBLE_DEVICES"]="0,1,2,3"
 
 #训练最大轮次
-num_epochs = 80
+num_epochs = 100
 
 #初始化学习速率
 INITIAL_LEARNING_RATE = 1e-3
@@ -302,7 +302,7 @@ def train(a):
         #print(b_cost, steps)
         if steps > 0 and steps % REPORT_STEPS == 0:
             do_report(val_gen,test_num)
-            saver.save(session, "./modelk11/LPRAug.ckpt", global_step=steps)
+            saver.save(session, "./model_aug/LPRAug.ckpt", global_step=steps)
         return b_cost, steps
 
     with tf.Session() as session:
@@ -310,9 +310,9 @@ def train(a):
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
         if a=='train':
              #start_epoch = 0
-             checkpoint = './modelk11/LPRAug.ckpt-72000'
+             checkpoint = './modelk11/LPRAug.ckpt-51000'
              saver.restore(session, checkpoint)
-             checkpoint_id = 72000
+             checkpoint_id = 51000
              start_epoch = checkpoint_id // BATCHES
              for curr_epoch in range(start_epoch, start_epoch+num_epochs):
                 print("Epoch.......", curr_epoch)

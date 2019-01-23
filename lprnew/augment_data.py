@@ -1,4 +1,5 @@
 import cv2
+import random
 from scipy import ndimage
 import numpy as np
 
@@ -61,7 +62,9 @@ def augment_data(image):
     contrast = np.random.randint(-60, 60) #typically between [-64, 64]
     apply_brightness_contrast(image, bright, contrast)
 
-    image = ndimage.rotate(image, (np.random.rand()-0.5)*15)   #random rotate -5 to 5 degree
+    image = ndimage.rotate(image, (np.random.rand()-0.5)*14)   #random rotate -7 to 7 degree
+    if random.random()>0.5:
+        image = 255-image
 
     return image
 
