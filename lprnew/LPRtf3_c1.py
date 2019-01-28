@@ -9,7 +9,7 @@ from model import get_train_model
 from augment_data import augment_data
 from config_new import CHARS, dict, CHARS_DICT, NUM_CHARS
 
-os.environ["CUDA_VISIBLE_DEVICES"]="0,1,2,3"
+os.environ["CUDA_VISIBLE_DEVICES"]="4,5,6,7"
 
 #训练最大轮次
 num_epochs = 100
@@ -25,20 +25,20 @@ REPORT_STEPS = 3000
 
 #训练集的数量
 BATCH_SIZE = 256
-TRAIN_SIZE = 85052
+TRAIN_SIZE = 79552
 BATCHES = TRAIN_SIZE//BATCH_SIZE
 test_num = 3
 
 #ti = 'train'         #训练集位置
 #vi = 'valid'         #验证集位
-#ti = '/ssd/wfei/data/LPR_training/20190106_lpr_data_train_wanda5000'         #训练集位置
 #ti = '/ssd/wfei/data/LPR_training/20181206_crnn_data_train_v1.7_new'         #训练集位置
+#ti = '/ssd/wfei/data/LPR_training/20190106_lpr_data_train_wanda5000'         #训练集位置
 ti = '/ssd/wfei/data/LPR_training/20190110_lpr_data_train_k11_5000'         #训练集位置
 vi = '/ssd/wfei/data/LPR_training/20181206_crnn_data_val_v1.7'         #验证集位置
 img_size = [94, 24]
 tl = None
 vl = None
-num_channels = 3
+num_channels = 1  
 label_len = 7
 
 
@@ -123,8 +123,9 @@ class TextImageGenerator:
             img = cv2.imread(os.path.join(self._img_dir, fname))
             ### ADD DATA AUGMENTATION ###
             img = augment_data(img)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             img = cv2.resize(img, (self._img_w, self._img_h), interpolation=cv2.INTER_CUBIC)
-            images[j, ...] = img
+            images[j, ...] = img[..., np.newaxis]
         images = np.transpose(images, axes=[0, 2, 1, 3])
         labels = self._labels[start:end, ...]
         targets = [np.asarray(i) for i in labels]
@@ -303,18 +304,18 @@ def train(a):
         #print(b_cost, steps)
         if steps > 0 and steps % REPORT_STEPS == 0:
             do_report(val_gen,test_num)
-            saver.save(session, "./model_aug/LPRAug.ckpt", global_step=steps)
+            saver.save(session, "./model_c1/LPRc1.ckpt", global_step=steps)
         return b_cost, steps
 
     with tf.Session() as session:
         session.run(init)
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
         if a=='train':
-             #start_epoch = 0
-             checkpoint = './model_aug/LPRAug.ckpt-66000'
-             saver.restore(session, checkpoint)
-             checkpoint_id = 66000
-             start_epoch = checkpoint_id // BATCHES
+             start_epoch = 0
+             #checkpoint = './model_c1/LPRAug.ckpt-30000'
+             #saver.restore(session, checkpoint)
+             #checkpoint_id = 30000
+             #start_epoch = checkpoint_id // BATCHES
              for curr_epoch in range(start_epoch, start_epoch+num_epochs):
                 print("Epoch.......", curr_epoch)
                 train_cost = train_ler = 0

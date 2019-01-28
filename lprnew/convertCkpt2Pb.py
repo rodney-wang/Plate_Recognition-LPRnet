@@ -26,8 +26,9 @@ test_seq_len = tf.ones(BATCH_SIZE) * 24
 MODEL_DIR = './model_pb'
 #MODEL_CKPT = './model69/LPRChar69.ckpt-63000'
 #MODEL_CKPT = './model69/LPRAug.ckpt-63000'
-MODEL_CKPT = './modelk11/LPRChar69.ckpt-96000'
+#MODEL_CKPT = './modelk11/LPRChar69.ckpt-96000'
 #MODEL_CKPT = './modelk11/LPRAug.ckpt-78000'
+MODEL_CKPT = './model_aug/LPRAug.ckpt-66000'
 
 tf.reset_default_graph()
 eval_graph = tf.Graph()
@@ -52,8 +53,8 @@ with tf.Session(config=config, graph=eval_graph) as sess:
     # feed_dict = {"inputs": inputs,
     #             "seq_len": test_seq_len}
     ipt = {"Placeholder": inputs,
-           "Placeholder_4":seq_len,
-           "is_train": isTraining}
+           "Placeholder_4":seq_len}
+           #"is_train": isTraining}
 
     outputs = { 'code2str_conversion/predicted':plate_predict,
                 'confidence_score': score}
