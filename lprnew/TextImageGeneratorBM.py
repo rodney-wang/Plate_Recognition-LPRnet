@@ -82,7 +82,11 @@ class TextImageGeneratorBM:
             fname = self._filenames[i]
             img = cv2.imread(os.path.join(self._img_dir, fname))
             img = cv2.resize(img, (self._img_w, self._img_h), interpolation=cv2.INTER_CUBIC)
-            images[j, ...] = img
+            if self._num_channels == 1:
+                img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                images[j, ...] = img[..., np.newaxis]
+            elif self._num_channels == 3:
+                images[j, ...] = img
         images = np.transpose(images, axes=[0, 2, 1, 3])
         labels = self._labels[start:end, ...]
         targets = [np.asarray(i) for i in labels]

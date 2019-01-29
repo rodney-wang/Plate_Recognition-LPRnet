@@ -1,4 +1,5 @@
 import os
+import argparse
 import tensorflow as tf
 import numpy as np
 from model import get_train_model
@@ -20,15 +21,26 @@ Outputs:
 """
 
 BATCH_SIZE = 1
-
 test_seq_len = tf.ones(BATCH_SIZE) * 24
 
-MODEL_DIR = './model_pb'
+parser = argparse.ArgumentParser(description='Plate end to end test')
+parser.add_argument('--model_ckpt', default='/ssd//wfei/code/Plate_Recognition-LPRnet/lprnew/model_c1/LPRc1.ckpt-57000',
+                        type=str, help='Input test image dir')
+parser.add_argument('--model_pb', default='./model_pb',
+                        type=str, help='Input test image dir')
+parser.add_argument('--num_channels', default=3,
+                        type=str, help='Input test image dir')
+args = parser.parse_args()
+
+
+MODEL_DIR = './model_pb_c1'
 #MODEL_CKPT = './model69/LPRChar69.ckpt-63000'
 #MODEL_CKPT = './model69/LPRAug.ckpt-63000'
 #MODEL_CKPT = './modelk11/LPRChar69.ckpt-96000'
 #MODEL_CKPT = './modelk11/LPRAug.ckpt-78000'
-MODEL_CKPT = './model_aug/LPRAug.ckpt-66000'
+#MODEL_CKPT = './model_aug/LPRAug.ckpt-66000'
+MODEL_CKPT = './model_c1/LPRc1.ckpt-57000'
+args.num_channels=1
 
 tf.reset_default_graph()
 eval_graph = tf.Graph()
@@ -41,8 +53,8 @@ with tf.Session(config=config, graph=eval_graph) as sess:
 
     global_step = tf.Variable(0, trainable=False)
 
-    isTraining = tf.placeholder(tf.bool, name="is_train")
-    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len, BATCH_SIZE, img_size, isTraining, False)
+    #isTraining = tf.placeholder(tf.bool, name="is_train")
+    logits, inputs, targets, seq_len = get_train_model(args.num_channels, label_len, BATCH_SIZE, img_size, False, False)
 
     logits = tf.transpose(logits, (1, 0, 2), name='logits_transpose')
 

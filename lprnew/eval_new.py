@@ -10,7 +10,7 @@ import time
 from model import get_train_model
 from TextImageGeneratorBM import TextImageGeneratorBM, report_accuracy, write_ocr
 
-from config_new import BATCH_SIZE, img_size, num_channels, label_len, NUM_CHARS
+from config_new import BATCH_SIZE, img_size, label_len, NUM_CHARS
 #from config import BATCH_SIZE, img_size, num_channels, label_len, NUM_CHARS
 #BATCH_SIZE= 256
 import pdb
@@ -45,7 +45,7 @@ def resize_image(img):
 
 
 
-def main(img_dir, lpr_model):
+def main(img_dir, lpr_model, num_channels):
     files = get_images(img_dir)
     img = cv2.imread(files[1])
     img = resize_image(img)
@@ -76,7 +76,7 @@ def main(img_dir, lpr_model):
 
 
 
-def batch_eval(img_dir, label_file, out_dir):
+def batch_eval(img_dir, label_file, out_dir, model_ckpt, num_channels):
 
     global_step = tf.Variable(0, trainable=False)
     logits, inputs, targets, seq_len = get_train_model(num_channels, label_len, BATCH_SIZE, img_size, False, False)
@@ -109,7 +109,8 @@ def batch_eval(img_dir, label_file, out_dir):
         #saver.restore(session, './modelk11/LPRAug.ckpt-78000')
         #saver.restore(session, './modelk11/LPRAug.ckpt-90000')
         #saver.restore(session, './model_aug2/LPRAug.ckpt-66000')
-        saver.restore(session, './model_aug/LPRAug.ckpt-84000')
+        #saver.restore(session, './model_aug/LPRAug.ckpt-84000')
+        saver.restore(session, model_ckpt)
 
         test_gen = TextImageGeneratorBM(img_dir=img_dir,
                                       label_file=label_file,
@@ -141,8 +142,10 @@ def parse_args():
     parser.add_argument('--out_dir', default='/ssd/wfei/data/testing_data/wanda_lpr_results69_v1.6',
                         type=str, help='Output image dir')
     parser.add_argument('--label_file', default='/ssd/wfei/data/testing_data/wanda_benchmark_label.json',
-                        type=str, help='Output image dir')
-
+                        type=str, help='Benchmark label in json format')
+    parser.add_argument('--model_ckpt', default='/ssd/wfei/code/Plate_Recognition-LPRnet/lprnew/model_c1/LPRc1.ckpt-57000',
+                        type=str, help='Path to the model checkpoint')
+    parser.add_argument('--num_channels', default=3, type=int, help='Number of channels for the input plate image')
     args = parser.parse_args()
     return args
 
@@ -157,7 +160,6 @@ if __name__ == '__main__':
     img_dir = '/Users/fei/data/parking/carplate/testing_data/wanda_benchmark/wanda_plates_v1.2'
     label_file = '/Users/fei/data/parking/carplate/testing_data/wanda_benchmark/wanda_benchmark_label.json'
     out_dir = '/Users/fei/data/parking/carplate/testing_data/wanda_benchmark/ocr_results_v1.2'
-    #main(args.img_dir)
-    #main(img_dir)
+
     #batch_eval(img_dir, label_file, out_dir)
-    batch_eval(args.img_dir, args.label_file, args.out_dir)
+    batch_eval(args.img_dir, args.label_file, args.out_dir, args.model_ckpt, args.num_channels)
