@@ -24,7 +24,7 @@ BATCH_SIZE = 1
 test_seq_len = tf.ones(BATCH_SIZE) * 24
 
 parser = argparse.ArgumentParser(description='Plate end to end test')
-parser.add_argument('--model_ckpt', default='/ssd//wfei/code/Plate_Recognition-LPRnet/lprnew/model_c1/LPRc1.ckpt-57000',
+parser.add_argument('--model_ckpt', default='/ssd//wfei/code/Plate_Recognition-LPRnet/lprnew/model_c1/LPRc1.ckpt-63000',
                         type=str, help='Input test image dir')
 parser.add_argument('--model_pb', default='./model_pb',
                         type=str, help='Input test image dir')
@@ -39,7 +39,7 @@ MODEL_DIR = './model_pb_c1'
 #MODEL_CKPT = './modelk11/LPRChar69.ckpt-96000'
 #MODEL_CKPT = './modelk11/LPRAug.ckpt-78000'
 #MODEL_CKPT = './model_aug/LPRAug.ckpt-66000'
-MODEL_CKPT = './model_c1/LPRc1.ckpt-57000'
+MODEL_CKPT = './model_c1/LPRc1.ckpt-63000'
 args.num_channels=1
 
 tf.reset_default_graph()
