@@ -1,6 +1,6 @@
 #coding=utf-8
 import tensorflow as tf
-from config import NUM_CHARS
+from config_new import NUM_CHARS
 
 def small_basic_block(x,im,om):
     x = conv(x,im,int(om/4),ksize=[1,1])
@@ -22,10 +22,11 @@ def conv(x,im,om,ksize,stride=[1,1,1,1],pad = 'SAME'):
     relu = tf.nn.bias_add(out, conv_biases)
     return relu
 
-def get_train_model(num_channels, label_len, b, img_size):
+def get_train_model(num_channels, label_len, b, img_size, training=False, trainable=True):
     inputs = tf.placeholder(
         tf.float32,
-        shape=(b, img_size[0], img_size[1], num_channels))
+        shape=(None, img_size[0], img_size[1], num_channels))
+        #shape=(b, img_size[0], img_size[1], num_channels))
 
     # 定义ctc_loss需要的稀疏矩阵
     targets = tf.sparse_placeholder(tf.int32)
@@ -35,7 +36,7 @@ def get_train_model(num_channels, label_len, b, img_size):
     x = inputs
 
     x = conv(x,num_channels,64,ksize=[3,3])
-    x = tf.layers.batch_normalization(x)
+    x = tf.layers.batch_normalization(x, training=training, trainable=trainable)
     x = tf.nn.relu(x)
     x = tf.nn.max_pool(x,
                           ksize=[1, 3, 3, 1],
@@ -43,7 +44,7 @@ def get_train_model(num_channels, label_len, b, img_size):
                           padding='SAME')
     x = small_basic_block(x,64,64)
     x2=x
-    x = tf.layers.batch_normalization(x)
+    x = tf.layers.batch_normalization(x,  training=training, trainable=trainable)
     x = tf.nn.relu(x)
 
     x = tf.nn.max_pool(x,
@@ -51,22 +52,22 @@ def get_train_model(num_channels, label_len, b, img_size):
                           strides=[1, 2, 1, 1],
                           padding='SAME')
     x = small_basic_block(x, 64,256)
-    x = tf.layers.batch_normalization(x)
+    x = tf.layers.batch_normalization(x,  training=training, trainable=trainable)
     x = tf.nn.relu(x)
     x = small_basic_block(x, 256, 256)
     x3 = x
-    x = tf.layers.batch_normalization(x)
+    x = tf.layers.batch_normalization(x,  training=training, trainable=trainable)
 
     x = tf.nn.relu(x)
     x = tf.nn.max_pool(x,
                        ksize=[1, 3, 3, 1],
                        strides=[1, 2, 1, 1],
                        padding='SAME')
-    x = tf.layers.dropout(x)
+    x = tf.layers.dropout(x, training=training)
 
     x = conv(x, 256, 256, ksize=[4, 1])
-    x = tf.layers.dropout(x)
-    x = tf.layers.batch_normalization(x)
+    x = tf.layers.dropout(x, training=training)
+    x = tf.layers.batch_normalization(x, training=training, trainable=trainable)
     x = tf.nn.relu(x)
 
 

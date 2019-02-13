@@ -10,8 +10,9 @@ import time
 from model import get_train_model
 from TextImageGeneratorBM import TextImageGeneratorBM, report_accuracy, write_ocr
 
-#from config_new import BATCH_SIZE, img_size, num_channels, label_len, NUM_CHARS
-from config import BATCH_SIZE, img_size, num_channels, label_len, NUM_CHARS
+from config_new import BATCH_SIZE, img_size, label_len, NUM_CHARS
+#from config import BATCH_SIZE, img_size, num_channels, label_len, NUM_CHARS
+#BATCH_SIZE= 256
 import pdb
 os.environ["CUDA_VISIBLE_DEVICES"]="-1"
 
@@ -44,7 +45,7 @@ def resize_image(img):
 
 
 
-def main(img_dir, lpr_model):
+def main(img_dir, lpr_model, num_channels):
     files = get_images(img_dir)
     img = cv2.imread(files[1])
     img = resize_image(img)
@@ -75,10 +76,10 @@ def main(img_dir, lpr_model):
 
 
 
-def batch_eval(img_dir, label_file, out_dir):
+def batch_eval(img_dir, label_file, out_dir, model_ckpt, num_channels):
 
     global_step = tf.Variable(0, trainable=False)
-    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len, BATCH_SIZE, img_size)
+    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len, BATCH_SIZE, img_size, False, False)
     logits = tf.transpose(logits, (1, 0, 2))
     # tragets是一个稀疏矩阵
     #decoded, log_prob = tf.nn.ctc_beam_search_decoder(logits, seq_len, merge_repeated=False)
@@ -100,8 +101,16 @@ def batch_eval(img_dir, label_file, out_dir):
     with tf.Session() as session:
         session.run(init)
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
-        #saver.restore(session, './model/LPRMore.ckpt-48000')
-        saver.restore(session, './model/LPRtf3.ckpt-72000')
+        #saver.restore(session, './model69/LPRAug.ckpt-63000')
+        #saver.restore(session, './model69/LPRChar69.ckpt-66000')
+        #saver.restore(session, './model69/LPRChar69.ckpt-81000')
+        #saver.restore(session, './modelk11/LPRChar69.ckpt-63000')
+        #saver.restore(session, './modelk11/LPRChar69.ckpt-90000')
+        #saver.restore(session, './modelk11/LPRAug.ckpt-78000')
+        #saver.restore(session, './modelk11/LPRAug.ckpt-90000')
+        #saver.restore(session, './model_aug2/LPRAug.ckpt-66000')
+        #saver.restore(session, './model_aug/LPRAug.ckpt-84000')
+        saver.restore(session, model_ckpt)
 
         test_gen = TextImageGeneratorBM(img_dir=img_dir,
                                       label_file=label_file,
@@ -130,11 +139,13 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Plate end to end test')
     parser.add_argument('--img_dir', default='/ssd/wfei/data/testing_data/wanda_plates_v1.2',
                         type=str, help='Input test image dir')
-    parser.add_argument('--out_dir', default='/ssd/wfei/data/testing_data/wanda_lpr_results_v1.3',
+    parser.add_argument('--out_dir', default='/ssd/wfei/data/testing_data/wanda_lpr_results69_v1.6',
                         type=str, help='Output image dir')
     parser.add_argument('--label_file', default='/ssd/wfei/data/testing_data/wanda_benchmark_label.json',
-                        type=str, help='Output image dir')
-
+                        type=str, help='Benchmark label in json format')
+    parser.add_argument('--model_ckpt', default='/ssd/wfei/code/Plate_Recognition-LPRnet/lprnew/model_c1/LPRc1.ckpt-57000',
+                        type=str, help='Path to the model checkpoint')
+    parser.add_argument('--num_channels', default=3, type=int, help='Number of channels for the input plate image')
     args = parser.parse_args()
     return args
 
@@ -149,7 +160,6 @@ if __name__ == '__main__':
     img_dir = '/Users/fei/data/parking/carplate/testing_data/wanda_benchmark/wanda_plates_v1.2'
     label_file = '/Users/fei/data/parking/carplate/testing_data/wanda_benchmark/wanda_benchmark_label.json'
     out_dir = '/Users/fei/data/parking/carplate/testing_data/wanda_benchmark/ocr_results_v1.2'
-    #main(args.img_dir)
-    #main(img_dir)
+
     #batch_eval(img_dir, label_file, out_dir)
-    batch_eval(args.img_dir, args.label_file, args.out_dir)
+    batch_eval(args.img_dir, args.label_file, args.out_dir, args.model_ckpt, args.num_channels)

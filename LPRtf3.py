@@ -5,9 +5,14 @@ import cv2
 import os
 import re
 import random
+from model import get_train_model
+from augment_data import augment_data
+from config_new import CHARS, dict, CHARS_DICT, NUM_CHARS
+
+os.environ["CUDA_VISIBLE_DEVICES"]="4,5,6,7"
 
 #训练最大轮次
-num_epochs = 200
+num_epochs = 100
 
 #初始化学习速率
 INITIAL_LEARNING_RATE = 1e-3
@@ -20,46 +25,38 @@ REPORT_STEPS = 3000
 
 #训练集的数量
 BATCH_SIZE = 256
-TRAIN_SIZE = 93963
+TRAIN_SIZE = 79552
 BATCHES = TRAIN_SIZE//BATCH_SIZE
 test_num = 3
 
 #ti = 'train'         #训练集位置
 #vi = 'valid'         #验证集位
-ti = '/ssd/wfei/data/LPR_training/20181220_crnn_data_train_v1.8e'         #训练集位置
+#ti = '/ssd/wfei/data/LPR_training/20181206_crnn_data_train_v1.7_new'         #训练集位置
+#ti = '/ssd/wfei/data/LPR_training/20190106_lpr_data_train_wanda5000'         #训练集位置
+ti = '/ssd/wfei/data/LPR_training/20190110_lpr_data_train_k11_5000'         #训练集位置
 vi = '/ssd/wfei/data/LPR_training/20181206_crnn_data_val_v1.7'         #验证集位置
 img_size = [94, 24]
 tl = None
 vl = None
-num_channels = 3
+num_channels = 1  
 label_len = 7
-
-CHARS = ['京', '沪', '津', '渝', '冀', '晋', '蒙', '辽', '吉', '黑',
-         '苏', '浙', '皖', '闽', '赣', '鲁', '豫', '鄂', '湘', '粤',
-         '桂', '琼', '川', '贵', '云', '藏', '陕', '甘', '青', '宁',
-         '新',
-         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-         'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K',
-         'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
-         'W', 'X', 'Y', 'Z','_'
-         ]
-dict = {'A01':'京','A02':'津','A03':'沪','B02':'蒙',
-        'S01':'皖','S02':'闽','S03':'粤','S04':'甘',
-        'S05': '贵', 'S06': '鄂', 'S07': '冀', 'S08': '黑', 'S09': '湘',
-        'S10': '豫', 'S12': '吉', 'S13': '苏', 'S14': '赣', 'S15': '辽',
-        'S17': '川', 'S18': '鲁', 'S22': '浙',
-        'S30':'渝', 'S31':'晋', 'S32':'桂', 'S33':'琼', 'S34':'云', 'S35':'藏',
-        'S36':'陕','S37':'青', 'S38':'宁', 'S39':'新'}
-
-CHARS_DICT = {char:i for i, char in enumerate(CHARS)}
-
-NUM_CHARS = len(CHARS)
 
 
 def encode_label(s):
     label = np.zeros([len(s)])
     for i, c in enumerate(s):
         label[i] = CHARS_DICT[c]
+    return label
+
+
+def decode_fname(fname):
+    parts = fname.split('_')[:-1]
+    label = ""
+    for seg in parts:
+        if seg in dict:
+            label += dict[seg]
+        else:
+            label += seg
     return label
 
 #读取图片和label,产生batch
@@ -83,22 +80,22 @@ class TextImageGenerator:
     def init(self):
         self.labels = []
         fs = os.listdir(self._img_dir)
+        # for filename in fs:
+        #    if filename[-4:] == '.jpg' or filename[-4:] == '.png':
+        #        self.filenames.append(filename)
         for filename in fs:
             if filename[-4:] == '.jpg' or filename[-4:] == '.png':
-                self.filenames.append(filename)
-        for filename in self.filenames:
-            if '\u4e00' <= filename[0]<= '\u9fff':
-                label = filename[:7]
-            else:
-                print(filename)
-                if filename[:3] in dict:
-                    label = dict[filename[:3]] + filename[4:10]
-                else:
+                label = decode_fname(filename)
+                label = encode_label(label)
+                #if len(label) > 7 or len(label) < 6:
+                if len(label) != 7:
                     continue
-            label = encode_label(label)
-            self.labels.append(label)
-            self._num_examples += 1
+                self.filenames.append(filename)
+                self.labels.append(label)
+                self._num_examples += 1
         self.labels = np.float32(self.labels)
+        print(len(self.filenames), len(self.labels))
+        print("Number of examples: {}".format(self._num_examples))
 
     def next_batch(self):
         # Shuffle the data
@@ -124,8 +121,11 @@ class TextImageGenerator:
         for j, i in enumerate(range(start, end)):
             fname = self._filenames[i]
             img = cv2.imread(os.path.join(self._img_dir, fname))
+            ### ADD DATA AUGMENTATION ###
+            img = augment_data(img)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             img = cv2.resize(img, (self._img_w, self._img_h), interpolation=cv2.INTER_CUBIC)
-            images[j, ...] = img
+            images[j, ...] = img[..., np.newaxis]
         images = np.transpose(images, axes=[0, 2, 1, 3])
         labels = self._labels[start:end, ...]
         targets = [np.asarray(i) for i in labels]
@@ -202,116 +202,6 @@ def conv(x,im,om,ksize,stride=[1,1,1,1],pad = 'SAME'):
     relu = tf.nn.bias_add(out, conv_biases)
     return relu
 
-def get_train_model(num_channels, label_len, b, img_size):
-    inputs = tf.placeholder(
-        tf.float32,
-        shape=(b, img_size[0], img_size[1], num_channels))
-
-    # 定义ctc_loss需要的稀疏矩阵
-    targets = tf.sparse_placeholder(tf.int32)
-
-    # 1维向量 序列长度 [batch_size,]
-    seq_len = tf.placeholder(tf.int32, [None])
-    x = inputs
-
-    x = conv(x,num_channels,64,ksize=[3,3])
-    x = tf.layers.batch_normalization(x)
-    x = tf.nn.relu(x)
-    x = tf.nn.max_pool(x,
-                          ksize=[1, 3, 3, 1],
-                          strides=[1, 1, 1, 1],
-                          padding='SAME')
-    x = small_basic_block(x,64,64)
-    x2=x
-    x = tf.layers.batch_normalization(x)
-    x = tf.nn.relu(x)
-
-    x = tf.nn.max_pool(x,
-                          ksize=[1, 3, 3, 1],
-                          strides=[1, 2, 1, 1],
-                          padding='SAME')
-    x = small_basic_block(x, 64,256)
-    x = tf.layers.batch_normalization(x)
-    x = tf.nn.relu(x)
-    x = small_basic_block(x, 256, 256)
-    x3 = x
-    x = tf.layers.batch_normalization(x)
-
-    x = tf.nn.relu(x)
-    x = tf.nn.max_pool(x,
-                       ksize=[1, 3, 3, 1],
-                       strides=[1, 2, 1, 1],
-                       padding='SAME')
-    x = tf.layers.dropout(x)
-
-    x = conv(x, 256, 256, ksize=[4, 1])
-    x = tf.layers.dropout(x)
-    x = tf.layers.batch_normalization(x)
-    x = tf.nn.relu(x)
-
-
-    x = conv(x,256,NUM_CHARS+1,ksize=[1,13],pad='SAME')
-    x = tf.nn.relu(x)
-    cx = tf.reduce_mean(tf.square(x))
-    x = tf.div(x,cx)
-
-    #x = tf.reduce_mean(x,axis = 2)
-    #x1 = conv(inputs,num_channels,num_channels,ksize = (5,1))
-
-
-    x1 = tf.nn.avg_pool(inputs,
-                       ksize=[1, 4, 1, 1],
-                       strides=[1, 4, 1, 1],
-                       padding='SAME')
-    cx1 = tf.reduce_mean(tf.square(x1))
-    x1 = tf.div(x1, cx1)
-
-    # x1 = tf.image.resize_images(x1, size = [18, 16], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
-
-    x2 = tf.nn.avg_pool(x2,
-                        ksize=[1, 4, 1, 1],
-                        strides=[1, 4, 1, 1],
-                        padding='SAME')
-    cx2 = tf.reduce_mean(tf.square(x2))
-    x2 = tf.div(x2, cx2)
-
-    #x2 = tf.image.resize_images(x2, size=[18, 16], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
-
-    x3 = tf.nn.avg_pool(x3,
-                        ksize=[1, 2, 1, 1],
-                        strides=[1, 2, 1, 1],
-                        padding='SAME')
-    cx3 = tf.reduce_mean(tf.square(x3))
-    x3 = tf.div(x3, cx3)
-
-    #x3 = tf.image.resize_images(x3, size=[18, 16], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
-
-
-    #x1 = tf.nn.relu(x1)
-
-    x = tf.concat([x,x1,x2,x3],3)
-    x = conv(x, x.get_shape().as_list()[3], NUM_CHARS + 1, ksize=(1, 1))
-    logits = tf.reduce_mean(x,axis=2)
-    # x_shape = x.get_shape().as_list()
-    # outputs = tf.reshape(x, [-1,x_shape[2]*x_shape[3]])
-    # W1 = tf.Variable(tf.truncated_normal([x_shape[2]*x_shape[3],
-    #                                      150],
-    #                                     stddev=0.1))
-    # b1 = tf.Variable(tf.constant(0., shape=[150]))
-    # # [batch_size*max_timesteps,num_classes]
-    # x = tf.matmul(outputs, W1) + b1
-    # x= tf.layers.dropout(x)
-    # x = tf.nn.relu(x)
-    # W2 = tf.Variable(tf.truncated_normal([150,
-    #                                      NUM_CHARS+1],
-    #                                     stddev=0.1))
-    # b2 = tf.Variable(tf.constant(0., shape=[NUM_CHARS+1]))
-    # x = tf.matmul(x, W2) + b2
-    # x = tf.layers.dropout(x)
-    # # [batch_size,max_timesteps,num_classes]
-    # logits = tf.reshape(x, [b, -1, NUM_CHARS+1])
-
-    return logits, inputs, targets, seq_len
 
 def train(a):
 
@@ -334,18 +224,20 @@ def train(a):
                                                DECAY_STEPS,
                                                LEARNING_RATE_DECAY_FACTOR,
                                                staircase=True)
-    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len,BATCH_SIZE, img_size)
+    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len,BATCH_SIZE, img_size, True, True)
     logits = tf.transpose(logits, (1, 0, 2))
     # tragets是一个稀疏矩阵
     loss = tf.nn.ctc_loss(labels=targets, inputs=logits, sequence_length=seq_len)
     cost = tf.reduce_mean(loss)
 
     # optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate,momentum=MOMENTUM).minimize(cost, global_step=global_step)
-    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss, global_step=global_step)
+    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    with tf.control_dependencies(update_ops):
+        optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss, global_step=global_step)
 
     # 前面说的划分块之后找每块的类属概率分布，ctc_beam_search_decoder方法,是每次找最大的K个概率分布
     # 还有一种贪心策略是只找概率最大那个，也就是K=1的情况ctc_ greedy_decoder
-    decoded, log_prob = tf.nn.ctc_beam_search_decoder(logits, seq_len, merge_repeated=False)
+    decoded, log_prob = tf.nn.ctc_beam_search_decoder(logits, seq_len, merge_repeated=False, top_paths=3)
 
     acc = tf.reduce_mean(tf.edit_distance(tf.cast(decoded[0], tf.int32), targets))
 
@@ -412,7 +304,7 @@ def train(a):
         #print(b_cost, steps)
         if steps > 0 and steps % REPORT_STEPS == 0:
             do_report(val_gen,test_num)
-            saver.save(session, "./model/LPRk110k.ckpt", global_step=steps)
+            saver.save(session, "./model_c1/LPRc1.ckpt", global_step=steps)
         return b_cost, steps
 
     with tf.Session() as session:
@@ -420,11 +312,11 @@ def train(a):
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
         if a=='train':
              start_epoch = 0
-             #checkpoint = './model/LPRtf3.ckpt-42000'
+             #checkpoint = './model_c1/LPRAug.ckpt-30000'
              #saver.restore(session, checkpoint)
-             #checkpoint_id = 42000 
-             #start_epoch = checkpoint_id // BATCHES 
-             for curr_epoch in range(start_epoch, num_epochs):
+             #checkpoint_id = 30000
+             #start_epoch = checkpoint_id // BATCHES
+             for curr_epoch in range(start_epoch, start_epoch+num_epochs):
                 print("Epoch.......", curr_epoch)
                 train_cost = train_ler = 0
                 for batch in range(BATCHES):

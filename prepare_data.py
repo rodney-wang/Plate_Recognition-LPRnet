@@ -5,30 +5,26 @@ import os
 import glob
 import json
 from shutil import copyfile
+from config_new import CHARS, dict
 
-#train_csv = "/Users/fei/tmp/wanda_plates_1105/20181105_plates_crnn_training_100k.txt"
-train_csv = "/ssd/zq/parkinglot_pipeline/carplate/data/20181220_crnn_training_data_label_v1.8e"
-#train_csv = "/ssd/zq/parkinglot_pipeline/carplate/data/k11_plates_for_training_1219.txt"
-#train_csv = "/ssd/wfei/data/ocr_training/20181008_plate_and_label_filtered.txt"
-#train_csv = "/ssd/wfei/data/ocr_training/20181121_plate_and_label_filtered_crnn6.txt"
+# train_csv = "/Users/fei/tmp/wanda_plates_1105/20181105_plates_crnn_training_100k.txt"
+# train_csv = "/ssd/zq/parkinglot_pipeline/carplate/data/k11_plates_for_training_1219.txt"
+# train_csv = "/ssd/wfei/data/ocr_training/20181008_plate_and_label_filtered.txt"
+# train_csv = "/ssd/wfei/data/ocr_training/20181121_plate_and_label_filtered_crnn6.txt"
+# train_csv = "/ssd/zq/parkinglot_pipeline/carplate/data/20181220_crnn_training_data_label_v1.8e"
+train_csv = "/ssd/zq/parkinglot_pipeline/carplate/data/20181206_crnn_training_data_label_v1.7"
+train_csv = "/ssd/zq/parkinglot_pipeline/carplate/data/k11_plates_for_training_area5000_20190110.txt"
+#train_csv = "/ssd/wfei/data/ocr_training/wanda_5K_plates.txt"
 
-CHARS = ['京', '沪', '津', '渝', '冀', '晋', '蒙', '辽', '吉', '黑',
-         '苏', '浙', '皖', '闽', '赣', '鲁', '豫', '鄂', '湘', '粤',
-         '桂', '琼', '川', '贵', '云', '藏', '陕', '甘', '青', '宁',
-         '新',
-         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-         'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K',
-         'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
-         'W', 'X', 'Y', 'Z','_'
-         ]
-print(len(CHARS))
-dict_chi = {'A01':'京','A02':'津','A03':'沪','B02':'蒙',
-        'S01':'皖','S02':'闽','S03':'粤','S04':'甘',
-        'S05': '贵', 'S06': '鄂', 'S07': '冀', 'S08': '黑', 'S09': '湘',
-        'S10': '豫', 'S12': '吉', 'S13': '苏', 'S14': '赣', 'S15': '辽',
-        'S17': '川', 'S18': '鲁', 'S22': '浙',
-        'S30':'渝', 'S31':'晋', 'S32':'桂', 'S33':'琼', 'S34':'云', 'S35':'藏',
-        'S36':'陕','S37':'青', 'S38':'宁', 'S39':'新'}
+# dict_chi = {'A01':'京','A02':'津','A03':'沪','B02':'蒙',
+#         'S01':'皖','S02':'闽','S03':'粤','S04':'甘',
+#         'S05': '贵', 'S06': '鄂', 'S07': '冀', 'S08': '黑', 'S09': '湘',
+#         'S10': '豫', 'S12': '吉', 'S13': '苏', 'S14': '赣', 'S15': '辽',
+#         'S17': '川', 'S18': '鲁', 'S22': '浙',
+#         'S30':'渝', 'S31':'晋', 'S32':'桂', 'S33':'琼', 'S34':'云', 'S35':'藏',
+#         'S36':'陕','S37':'青', 'S38':'宁', 'S39':'新'}
+
+dict_chi = dict
 print(len(dict_chi))
 
 chi_str_dict = {v.decode('utf-8'):k for k, v in dict_chi.items()}
@@ -36,15 +32,20 @@ print(chi_str_dict)
 
 def convert_chars(plate_chars):
     res=[]
-    for char in plate_chars:
+    plen = len(plate_chars)
+    for i, char in enumerate(plate_chars):
         if char == 'I':
             char = '1'
         if char == 'O':
             char = '0'
         if char is not u'':
             if char in chi_str_dict:
-                res.append(chi_str_dict[char])
-                res.append('_')
+                if i == 0:
+                    res.append(chi_str_dict[char])
+                    res.append('_')
+                else:
+                    res.append('_')
+                    res.append(chi_str_dict[char])
             else:
                 res.append(char)
     return ''.join(res)
@@ -72,12 +73,14 @@ def batch_rename_copy(filename, tgt_folder):
     # store the number of counts of each plate
     plate_count ={}
     for index, row in data.iterrows():
-        #if index < 6085:
+        #if index > 10:
         #   continue
         plate_path = row.path
         plate_chars = row.transcription.split('|')
+        plate_chars = [c for c in plate_chars if c is not u'']
+        print plate_chars
         pid = convert_chars(plate_chars)
-        #print plate_chars, pid
+        print plate_chars, pid
         if pid not in plate_count:
             plate_count[pid] = 0
         else:
@@ -118,13 +121,16 @@ def batch_benchmark_rename_copy(json_file, src_folder, tgt_folder):
         copy_file(plate_path, os.path.join(tgt_folder, tgt_name))
 
 
-tgt_folder = '/ssd/wfei/data/LPR_training/20181220_crnn_data_train_v1.8e'
+tgt_folder = '/ssd/wfei/data/LPR_training/20181206_crnn_data_train_v1.7_new'
+tgt_folder = '/ssd/wfei/data/LPR_training/20181206_crnn_data_train_v1.7_new'
+tgt_folder = '/ssd/wfei/data/LPR_training/20190106_lpr_data_train_wanda5000'
+tgt_folder = '/ssd/wfei/data/LPR_training/20190110_lpr_data_train_k11_5000'
+
 batch_rename_copy(train_csv, tgt_folder)
 
-json_file = '/ssd/wfei/data/testing_data/wanda_benchmark_label.json'
-src_dir  ='/ssd/wfei/data/testing_data/wanda_plates_v1.2'
-tgt_dir = '/ssd/wfei/data/testing_data/wanda_plates_v1.2_with_label'
-
-#batch_benchmark_rename_copy(json_file, src_dir, tgt_dir)
+# json_file = '/ssd/wfei/data/testing_data/wanda_benchmark_label.json'
+# src_dir  ='/ssd/wfei/data/testing_data/wanda_plates_v1.2'
+# tgt_dir = '/ssd/wfei/data/testing_data/wanda_plates_v1.2_with_label'
+# batch_benchmark_rename_copy(json_file, src_dir, tgt_dir)
 
 
