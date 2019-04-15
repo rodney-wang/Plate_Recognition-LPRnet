@@ -6,7 +6,8 @@ import os
 import re
 import random
 from model import get_train_model
-from augment_data import augment_data
+from TextImageGeneratorH5 import TextImageGeneratorH5, sparse_tuple_from
+
 from config import CHARS, dict, CHARS_DICT, NUM_CHARS
 
 os.environ["CUDA_VISIBLE_DEVICES"]="4,5,6,7"
@@ -25,21 +26,17 @@ REPORT_STEPS = 3000
 
 #训练集的数量
 BATCH_SIZE = 256
-TRAIN_SIZE = 79552
+TRAIN_SIZE = 93313
 BATCHES = TRAIN_SIZE//BATCH_SIZE
 test_num = 3
 
-#ti = 'train'         #训练集位置
-#vi = 'valid'         #验证集位
-#ti = '/ssd/wfei/data/LPR_training/20181206_crnn_data_train_v1.7_new'         #训练集位置
-#ti = '/ssd/wfei/data/LPR_training/20190106_lpr_data_train_wanda5000'         #训练集位置
-ti = '/ssd/wfei/data/LPR_training/20190110_lpr_data_train_k11_5000'         #训练集位置
-vi = '/ssd/wfei/data/LPR_training/20181206_crnn_data_val_v1.7'         #验证集位置
+ti = '/ssd/wfei/code/Plate_Recognition-LPRnet/data/lpr_train_color'         #训练集位置
+vi = '/ssd/wfei/code/Plate_Recognition-LPRnet/data/lpr_test_color'         #验证集位置
 img_size = [94, 24]
 tl = None
 vl = None
 num_channels = 1  
-label_len = 8
+label_len = 7
 
 
 def encode_label(s):
@@ -47,115 +44,6 @@ def encode_label(s):
     for i, c in enumerate(s):
         label[i] = CHARS_DICT[c]
     return label
-
-
-def decode_fname(fname):
-    parts = fname.split('_')[:-1]
-    label = ""
-    for seg in parts:
-        if seg in dict:
-            label += dict[seg]
-        else:
-            label += seg
-    return label
-
-#读取图片和label,产生batch
-class TextImageGenerator:
-    def __init__(self, img_dir, label_file, batch_size, img_size, num_channels=3, label_len=7):
-        self._img_dir = img_dir
-        self._label_file = label_file
-        self._batch_size = batch_size
-        self._num_channels = num_channels
-        self._label_len = label_len
-        self._img_w, self._img_h = img_size
-
-        self._num_examples = 0
-        self._next_index = 0
-        self._num_epoches = 0
-        self.filenames = []
-        self.labels = []
-
-        self.init()
-
-    def init(self):
-        self.labels = []
-        fs = os.listdir(self._img_dir)
-        # for filename in fs:
-        #    if filename[-4:] == '.jpg' or filename[-4:] == '.png':
-        #        self.filenames.append(filename)
-        for filename in fs:
-            if filename[-4:] == '.jpg' or filename[-4:] == '.png':
-                label = decode_fname(filename)
-                label = encode_label(label)
-                #if len(label) > 7 or len(label) < 6:
-                if len(label) != 7:
-                    continue
-                self.filenames.append(filename)
-                self.labels.append(label)
-                self._num_examples += 1
-        self.labels = np.float32(self.labels)
-        print(len(self.filenames), len(self.labels))
-        print("Number of examples: {}".format(self._num_examples))
-
-    def next_batch(self):
-        # Shuffle the data
-        if self._next_index == 0:
-            perm = np.arange(self._num_examples)
-            np.random.shuffle(perm)
-            self._filenames = [self.filenames[i] for i in perm]
-            self._labels = self.labels[perm]
-
-        batch_size = self._batch_size
-        start = self._next_index
-        end = self._next_index + batch_size
-        if end > self._num_examples:
-            self._next_index = 0
-            start = self._next_index
-            end = self._next_index + batch_size
-            self._num_epoches += 1
-        else:
-            self._next_index = end
-        images = np.zeros([batch_size, self._img_h, self._img_w, self._num_channels])
-        # labels = np.zeros([batch_size, self._label_len])
-
-        for j, i in enumerate(range(start, end)):
-            fname = self._filenames[i]
-            img = cv2.imread(os.path.join(self._img_dir, fname))
-            ### ADD DATA AUGMENTATION ###
-            img = augment_data(img)
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            img = cv2.resize(img, (self._img_w, self._img_h), interpolation=cv2.INTER_CUBIC)
-            images[j, ...] = img[..., np.newaxis]
-        images = np.transpose(images, axes=[0, 2, 1, 3])
-        labels = self._labels[start:end, ...]
-        targets = [np.asarray(i) for i in labels]
-        sparse_labels = sparse_tuple_from(targets)
-        # input_length = np.zeros([batch_size, 1])
-
-        seq_len = np.ones(self._batch_size) * 24
-        return images, sparse_labels, seq_len
-
-def sparse_tuple_from(sequences, dtype=np.int32):
-    """
-    Create a sparse representention of x.
-    Args:
-        sequences: a list of lists of type dtype where each element is a sequence
-    Returns:
-        A tuple with (indices, values, shape)
-    """
-    indices = []
-    values = []
-
-    for n, seq in enumerate(sequences):
-        indices.extend(zip([n] * len(seq), range(len(seq))))
-        values.extend(seq)
-
-    indices = np.asarray(indices, dtype=np.int64)
-    values = np.asarray(values, dtype=dtype)
-    shape = np.asarray([len(sequences), np.asarray(indices).max(0)[1] + 1], dtype=np.int64)
-
-    return indices, values, shape
-
 
 def decode_sparse_tensor(sparse_tensor):
     decoded_indexes = list()
@@ -205,15 +93,13 @@ def conv(x,im,om,ksize,stride=[1,1,1,1],pad = 'SAME'):
 
 def train(a):
 
-    train_gen = TextImageGenerator(img_dir=ti,
-                                   label_file=tl,
+    train_gen = TextImageGeneratorH5(img_dir=ti,
                                    batch_size=BATCH_SIZE,
                                    img_size=img_size,
                                    num_channels=num_channels,
                                    label_len=label_len)
 
-    val_gen = TextImageGenerator(img_dir=vi,
-                                 label_file=vl,
+    val_gen = TextImageGeneratorH5(img_dir=vi,
                                  batch_size=BATCH_SIZE,
                                  img_size=img_size,
                                  num_channels=num_channels,
@@ -304,7 +190,7 @@ def train(a):
         #print(b_cost, steps)
         if steps > 0 and steps % REPORT_STEPS == 0:
             do_report(val_gen,test_num)
-            saver.save(session, "./model_c1/LPRc1.ckpt", global_step=steps)
+            saver.save(session, "./model_h5/LPR_energy_c1.ckpt", global_step=steps)
         return b_cost, steps
 
     with tf.Session() as session:
@@ -343,10 +229,9 @@ def train(a):
                 print(log.format(curr_epoch + 1, num_epochs, steps, train_cost, train_ler, val_cs/test_num, val_ls/test_num,
                                  time.time() - start, lr))
         if a =='test':
-            testi='/ssd/wfei/data/testing_data/wanda_plates_v1.2_with_label'
-            saver.restore(session, './model/LPRtf3.ckpt-42000')
-            test_gen = TextImageGenerator(img_dir=testi,
-                                           label_file=None,
+            testi='/ssd/wfei/code/Plate_Recognition-LPRnet/data/lpr_test_color'
+            saver.restore(session, './model_h5/LPR_energy_c1.ckpt-42000')
+            test_gen = TextImageGeneratorH5(img_dir=testi,
                                            batch_size=BATCH_SIZE,
                                            img_size=img_size,
                                            num_channels=num_channels,
