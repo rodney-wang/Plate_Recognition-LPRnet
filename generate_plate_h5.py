@@ -33,12 +33,13 @@ def write_image_info_into_hdf5(file_name, data_tuple, phase):
     if total_size % single_size:
         groups += 1
     def process(file_name, data):
-        img_data = np.zeros((len(data_tuple), 1, IMAGE_HEIGHT, IMAGE_WIDTH), dtype = np.float32)
+        img_data = np.zeros((len(data_tuple), IMAGE_HEIGHT, IMAGE_WIDTH, 3), dtype = np.float32)
         label_seq = 73*np.ones((len(data_tuple), LABEL_SEQ_LEN), dtype = np.float32)
         for i, datum in enumerate(data_tuple):
             img_path, numbers = datum
             label_seq[i, :len(numbers)] = numbers
-            img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE) #load as grayscale
+            img = cv2.imread(img_path)
+            #img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE) #load as grayscale
             img = cv2.resize(img, (IMAGE_WIDTH, IMAGE_HEIGHT)) 
             #img = caffe.io.resize(img, (IMAGE_HEIGHT, IMAGE_WIDTH, 1))
             #img = np.transpose(img, (2, 0, 1))
