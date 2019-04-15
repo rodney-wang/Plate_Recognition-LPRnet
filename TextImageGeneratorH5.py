@@ -53,37 +53,33 @@ class TextImageGeneratorH5:
         self._num_epoches = 0
         self._num_batches = 0
 
-        self.filenames = []
         self.labels = []
 
         self.init()
 
     def init(self):
-        ns =[]
-
-        for i, filename in enumerate(self._h5_files):
-            ff = h5py.File(filename, 'r')
-            ns.append( ff["data"].shape[0] )
-            self.labels.extend(ff["labels"])
-        self._num_examples = sum(ns)
-        print "Number of sample images:", ns
+        print self._h5_files
+        ff = h5py.File(self._h5_files[0], 'r')
+        self.X = ff["data"]
+        self.labels = ff["label"]
+        self._num_examples = self.X.shape[0]
+        print "Data shape:", self.X.shape
+        print "Label shape:", self.labels.shape
         print "Total images:", self._num_examples
-        sh = h5py.File(self._h5_files[0], 'r')["data"].shape  # get the first ones shape.
-
-        self.X = h5py.VirtualLayout(shape=(self._num_examples,) + sh, dtype=np.uint8)
-        for i, filename in enumerate(self._h5_files):
-            vsource = h5py.VirtualSource(filename, 'sh', shape=sh)
-            self.X[i, :, :, :] = vsource
 
         self._num_batches = self._num_examples//self._batch_size +1
+    
+    #def random_shuffle(self):
+
 
     def next_batch(self):
         # Shuffle the data
-        """if self._next_index %78 == 0:
+        """
+        if self._next_index == 0:
             perm = np.arange(self._num_examples)
             np.random.shuffle(perm)
-            self._filenames = [self.filenames[i] for i in perm]
-            self._labels = self.labels[perm]
+            self.labels = self.labels[perm, ...]
+            self.X = self.X[perm, ...]
         """
 
         batch_size = self._batch_size
@@ -102,13 +98,14 @@ class TextImageGeneratorH5:
         #labels = np.zeros([batch_size, self._label_len])
         images = np.zeros([batch_size, self._img_h, self._img_w, self._num_channels])
         for i,j in enumerate(range(start, end)):
-            img = np.squeeze(self.X[i, ...])
+            img = np.squeeze(self.X[j, ...])
             img = augment_data(img)
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            images[j, ...] = img[..., np.newaxis]
-
+            img = cv2.resize(img, (self._img_w, self._img_h), interpolation=cv2.INTER_CUBIC)
+            images[i, ...] = img[..., np.newaxis]
+        print "Batch image shape:", images.shape
         images = np.transpose(images, axes=[0, 2, 1, 3])
-        labels = self._labels[start:end, ...]
+        labels = self.labels[start:end, ...]
+        print labels
         targets = [np.asarray(i) for i in labels]
         sparse_labels = sparse_tuple_from(targets)
         # input_length = np.zeros([batch_size, 1])
@@ -121,9 +118,10 @@ if __name__ == '__main__':
     h5_path = '/ssd/wfei/code/Plate_Recognition-LPRnet/data/lpr_train_color'
     img_size = [94, 24]
 
-    train_gen = TextImageGeneratorH5(img_dir=h5_path,
-                                   batch_size=128,
+    train_gen = TextImageGeneratorH5(h5_path=h5_path,
+                                   batch_size=32,
                                    img_size=img_size,
                                    num_channels=1,
-                                   label_len=24)
-
+                                   label_len=8)
+    images, sparse_labels, seq_len = train_gen.next_batch()
+    print sparse_labels, seq_len
