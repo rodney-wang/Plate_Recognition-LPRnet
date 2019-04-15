@@ -1,6 +1,6 @@
 #coding=utf-8
 import tensorflow as tf
-from config_new import NUM_CHARS
+from config import NUM_CHARS
 
 def small_basic_block(x,im,om):
     x = conv(x,im,int(om/4),ksize=[1,1])

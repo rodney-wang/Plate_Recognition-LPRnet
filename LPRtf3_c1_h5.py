@@ -7,7 +7,7 @@ import re
 import random
 from model import get_train_model
 from augment_data import augment_data
-from config_new import CHARS, dict, CHARS_DICT, NUM_CHARS
+from config import CHARS, dict, CHARS_DICT, NUM_CHARS
 
 os.environ["CUDA_VISIBLE_DEVICES"]="4,5,6,7"
 
@@ -39,7 +39,7 @@ img_size = [94, 24]
 tl = None
 vl = None
 num_channels = 1  
-label_len = 7
+label_len = 8
 
 
 def encode_label(s):

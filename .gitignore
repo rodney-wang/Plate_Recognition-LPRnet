@@ -1,7 +1,10 @@
 #OS junk files
 [Tt]humbs.db
 *.DS_Store
-
+*.pb
+*.index
+*.meta
+*.data-00000-of-00001
 *.pyc
 *.jpg
 .idea
