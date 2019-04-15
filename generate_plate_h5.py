@@ -10,7 +10,7 @@ import random
 import argparse
 import codecs
 
-CAFFE_ROOT = os.getcwd()   # assume you are in $CAFFE_ROOT$ dir
+#CAFFE_ROOT = os.getcwd()   # assume you are in $CAFFE_ROOT$ dir
 IMAGE_WIDTH, IMAGE_HEIGHT = 94, 24
 LABEL_SEQ_LEN = 8
 char_dict = json.load(open('utils/carplate.json', 'r'))
@@ -39,6 +39,7 @@ def write_image_info_into_hdf5(file_name, data_tuple, phase):
             img_path, numbers = datum
             label_seq[i, :len(numbers)] = numbers
             img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE) #load as grayscale
+            img = cv2.resize(img, (IMAGE_WIDTH, IMAGE_HEIGHT)) 
             #img = caffe.io.resize(img, (IMAGE_HEIGHT, IMAGE_WIDTH, 1))
             #img = np.transpose(img, (2, 0, 1))
             img_data[i] = img
@@ -101,7 +102,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Convert the labeling csv files into h5 files for caffe training')
     parser.add_argument('--train_csv', default='/mnt/soulfs2/wfei/code/crnn.caffe/data/plate/train_ocrlabel/k11_train_20190408.txt',
                         type=str, help='Image path and labels in CRNN txt labeling file format')
-    parser.add_argument('--h5_path', default='/mnt/soulfs2/wfei/code/Plate_Recognition-LPRnet/data/',
+    parser.add_argument('--h5_path', default='/ssd/wfei/code/Plate_Recognition-LPRnet/data/',
                         type=str, help='Path to write the h5 file and list file')
     args = parser.parse_args()
     return args
