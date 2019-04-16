@@ -14,7 +14,7 @@ from config import CHARS, dict, CHARS_DICT, NUM_CHARS
 os.environ["CUDA_VISIBLE_DEVICES"]="4,5,6,7"
 
 #训练最大轮次
-num_epochs = 100
+num_epochs = 400
 
 #初始化学习速率
 INITIAL_LEARNING_RATE = 1e-3
@@ -111,7 +111,9 @@ def train(a):
                                                DECAY_STEPS,
                                                LEARNING_RATE_DECAY_FACTOR,
                                                staircase=True)
-    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len,BATCH_SIZE, img_size, True, True)
+
+    print "LEARNING RATE!!!"
+    logits, inputs, targets, seq_len = get_train_model(num_channels, label_len, BATCH_SIZE, img_size, True, True)
     logits = tf.transpose(logits, (1, 0, 2))
     # tragets是一个稀疏矩阵
     loss = tf.nn.ctc_loss(labels=targets, inputs=logits, sequence_length=seq_len)
@@ -121,14 +123,17 @@ def train(a):
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
     with tf.control_dependencies(update_ops):
         optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss, global_step=global_step)
+    print "After Optimizer!!!"
 
     # 前面说的划分块之后找每块的类属概率分布，ctc_beam_search_decoder方法,是每次找最大的K个概率分布
     # 还有一种贪心策略是只找概率最大那个，也就是K=1的情况ctc_ greedy_decoder
     decoded, log_prob = tf.nn.ctc_beam_search_decoder(logits, seq_len, merge_repeated=False, top_paths=3)
 
     acc = tf.reduce_mean(tf.edit_distance(tf.cast(decoded[0], tf.int32), targets))
+    print "After ACC!!!"
 
     init = tf.global_variables_initializer()
+    print "After Global TensorFlow Init!!!"
 
     def report_accuracy(decoded_list, test_targets):
         original_list = decode_sparse_tensor(test_targets)
@@ -241,5 +246,5 @@ def train(a):
 
 
 if __name__ == "__main__":
-        a = input('train or test:')
+        a = 'train' #input('train or test:')
         train(a)
