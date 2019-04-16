@@ -1,3 +1,4 @@
+#coding=utf-8
 import tensorflow as tf
 import numpy as np
 import time
@@ -36,7 +37,7 @@ img_size = [94, 24]
 tl = None
 vl = None
 num_channels = 1  
-label_len = 7
+label_len = 8 
 
 
 def encode_label(s):
@@ -93,13 +94,13 @@ def conv(x,im,om,ksize,stride=[1,1,1,1],pad = 'SAME'):
 
 def train(a):
 
-    train_gen = TextImageGeneratorH5(img_dir=ti,
+    train_gen = TextImageGeneratorH5(h5_path=ti,
                                    batch_size=BATCH_SIZE,
                                    img_size=img_size,
                                    num_channels=num_channels,
                                    label_len=label_len)
 
-    val_gen = TextImageGeneratorH5(img_dir=vi,
+    val_gen = TextImageGeneratorH5(h5_path=vi,
                                  batch_size=BATCH_SIZE,
                                  img_size=img_size,
                                  num_channels=num_channels,
@@ -231,7 +232,7 @@ def train(a):
         if a =='test':
             testi='/ssd/wfei/code/Plate_Recognition-LPRnet/data/lpr_test_color'
             saver.restore(session, './model_h5/LPR_energy_c1.ckpt-42000')
-            test_gen = TextImageGeneratorH5(img_dir=testi,
+            test_gen = TextImageGeneratorH5(h5_path=testi,
                                            batch_size=BATCH_SIZE,
                                            img_size=img_size,
                                            num_channels=num_channels,
