@@ -11,14 +11,14 @@ from TextImageGeneratorH5 import TextImageGeneratorH5, sparse_tuple_from
 
 from config import CHARS, dict, CHARS_DICT, NUM_CHARS
 
-os.environ["CUDA_VISIBLE_DEVICES"]="4,5,6"
+os.environ["CUDA_VISIBLE_DEVICES"]="2,3"
 
 #训练最大轮次
 num_epochs = 300
 
 #初始化学习速率
 INITIAL_LEARNING_RATE = 1e-3
-DECAY_STEPS = 2000
+DECAY_STEPS = 4000
 LEARNING_RATE_DECAY_FACTOR = 0.9  # The learning rate decay factor
 MOMENTUM = 0.9
 

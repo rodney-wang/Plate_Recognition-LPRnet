@@ -102,12 +102,13 @@ class TextImageGeneratorH5:
             images[i, ...] = img[..., np.newaxis]
         """
         images = self.X[start:end, ...]
-        images = images[..., np.newaxis]
-        images = np.transpose(images, axes=[0, 2, 1, 3])
+        #print images, images.shape
+        #images = images[..., np.newaxis]
+        images = np.transpose(images, axes=[0, 3, 2, 1])
         labels = self.labels[start:end, ...]
-        print labels
-        print "Batch image shape:", images.shape
-        print "Batch label shape:", labels.shape
+        #print labels
+        #print "Batch image shape:", images.shape
+        #print "Batch label shape:", labels.shape
         targets = [np.asarray(i) for i in labels]
         sparse_labels = sparse_tuple_from(targets)
         # input_length = np.zeros([batch_size, 1])
@@ -129,3 +130,4 @@ if __name__ == '__main__':
        print "Batch ", i 
        images, sparse_labels, seq_len = train_gen.next_batch()
        #print sparse_labels, seq_len
+       print images.shape
