@@ -7,7 +7,7 @@ import json
 from config import CHARS, dict, CHARS_DICT, NUM_CHARS
 
 class TextImageGeneratorBM:
-    def __init__(self, img_dir, label_file, batch_size, img_size, num_channels=3, label_len=7):
+    def __init__(self, img_dir, label_file, batch_size, img_size, num_channels=3, label_len=8):
         self._img_dir = img_dir
         self._label_file = label_file
         self._batch_size = batch_size
@@ -40,13 +40,18 @@ class TextImageGeneratorBM:
                     continue
                 #if '\u4e00' <= label[0] <= '\u9fff':
                 #    label = filename[:7]
-                if len(chars) >=7:
+                if len(chars) >=8:
                     self.filenames.append(filename)
                     #print(filename, chars)
-                    label = encode_label(chars[:7])
-
+                    label = encode_label(chars[:8])
                     self.labels.append(label)
                     self._num_examples += 1
+                elif len(chars) == 7:
+                    label = encode_label(chars).extend([73])
+                    self.labels.append(label)
+                    self._num_examples += 1
+                else:
+                    print "Skip ", bname, chars, "!!!"
         self.labels = np.float32(self.labels)
         self._num_batches = self._num_examples//self._batch_size +1
 
@@ -79,6 +84,8 @@ class TextImageGeneratorBM:
             fname = self._filenames[i]
             img = cv2.imread(os.path.join(self._img_dir, fname))
             img = cv2.resize(img, (self._img_w, self._img_h), interpolation=cv2.INTER_CUBIC)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            img = img[:, :, np.newaxis]
             images[j, ...] = img
         images = np.transpose(images, axes=[0, 2, 1, 3])
         labels = self._labels[start:end, ...]
@@ -142,7 +149,7 @@ def encode_label(s):
         if c.encode('utf-8') in CHARS_DICT:
             label[i] = CHARS_DICT[c.encode('utf-8')]
         else:
-            label[i] = -1
+            label[i] = 73
             print 'Label not in dict!!!', c, label
     return label
 

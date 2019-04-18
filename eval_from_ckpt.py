@@ -12,7 +12,7 @@ from TextImageGeneratorBM import TextImageGeneratorBM, report_accuracy, write_oc
 
 #from config_new import BATCH_SIZE, img_size, num_channels, label_len, NUM_CHARS
 from config import  img_size, num_channels, label_len, NUM_CHARS
-BATCH_SIZE = 1
+BATCH_SIZE = 256
 
 import pdb
 os.environ["CUDA_VISIBLE_DEVICES"]="-1"
@@ -104,7 +104,7 @@ def batch_eval(img_dir, label_file, out_dir):
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
         #saver.restore(session, './model/LPRk110k.ckpt-72000')
         #saver.restore(session, './model/LPRMore.ckpt-48000')
-        saver.restore(session, './model/LPRtf3.ckpt-72000')
+        saver.restore(session, './model_h5/LPR_energy_c1.ckpt-72000')
 
         test_gen = TextImageGeneratorBM(img_dir=img_dir,
                                       label_file=label_file,
@@ -131,11 +131,11 @@ def batch_eval(img_dir, label_file, out_dir):
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Plate end to end test')
-    parser.add_argument('--img_dir', default='/ssd/wfei/data/testing_data/wanda_plates_v1.2',
+    parser.add_argument('--img_dir', default='/ssd/wfei/data/testing_data/k11_plates_v1.2',
                         type=str, help='Input test image dir')
-    parser.add_argument('--out_dir', default='/ssd/wfei/data/testing_data/wanda_results_lpr_v1.0',
+    parser.add_argument('--out_dir', default='/ssd/wfei/data/testing_data/k11_tfresults_lpr_v2.0',
                         type=str, help='Output image dir')
-    parser.add_argument('--label_file', default='/ssd/wfei/data/testing_data/wanda_benchmark_label.json',
+    parser.add_argument('--label_file', default='/ssd/wfei/data/testing_data/k11_benchmark_label.json',
                         type=str, help='Output image dir')
 
     args = parser.parse_args()
@@ -147,11 +147,4 @@ if __name__ == '__main__':
 
     args = parse_args()
 
-    #run_lpr(args.img_dir, args.out_dir)
-    #batch_test(args.img_dir, args.label_file)
-    img_dir = '/Users/fei/data/parking/carplate/testing_data/wanda_benchmark/wanda_plates_v1.2'
-    label_file = '/Users/fei/data/parking/carplate/testing_data/wanda_benchmark/wanda_benchmark_label.json'
-    out_dir = '/Users/fei/data/parking/carplate/testing_data/wanda_benchmark/ocr_results_v1.2'
-    #main(args.img_dir)
-    #main(img_dir)
-    batch_eval(img_dir, label_file, out_dir)
+    batch_eval(args.img_dir, args.label_file, args.out_dir)

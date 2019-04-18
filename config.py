@@ -15,6 +15,12 @@ CHARS_DICT = {char:i for i, char in enumerate(CHARS)}
 
 NUM_CHARS = len(CHARS)
 
+img_size = [94, 24]
+
+label_len =8
+
+num_channels =1
+
 #CHARS = ['京', '沪', '津', '渝', '冀', '晋', '蒙', '辽', '吉', '黑',
 #         '苏', '浙', '皖', '闽', '赣', '鲁', '豫', '鄂', '湘', '粤',
 #         '桂', '琼', '川', '贵', '云', '藏', '陕', '甘', '青', '宁',
