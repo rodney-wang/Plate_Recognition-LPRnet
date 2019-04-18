@@ -94,17 +94,20 @@ class TextImageGeneratorH5:
             self._next_index = end
 
         images = np.zeros([batch_size, self._img_h, self._img_w, self._num_channels])
-        for i,j in enumerate(range(start, end)):
+        """for i,j in enumerate(range(start, end)):
             img = np.squeeze(self.X[j, ...])
             img = augment_data(img)
             img = cv2.resize(img, (self._img_w, self._img_h), interpolation=cv2.INTER_CUBIC)
             #img = cv2.cvtColor(img,cv2.COLOR_RGB2GRAY)
             images[i, ...] = img[..., np.newaxis]
+        """
+        images = self.X[start:end, ...]
+        images = images[..., np.newaxis]
         images = np.transpose(images, axes=[0, 2, 1, 3])
         labels = self.labels[start:end, ...]
-        #print labels
-        #print "Batch image shape:", images.shape
-        #print "Batch label shape:", labels.shape
+        print labels
+        print "Batch image shape:", images.shape
+        print "Batch label shape:", labels.shape
         targets = [np.asarray(i) for i in labels]
         sparse_labels = sparse_tuple_from(targets)
         # input_length = np.zeros([batch_size, 1])
@@ -114,7 +117,7 @@ class TextImageGeneratorH5:
 
 
 if __name__ == '__main__':
-    h5_path = '/ssd/wfei/code/Plate_Recognition-LPRnet/data/lpr_train_color'
+    h5_path = '/ssd/wfei/code/Plate_Recognition-LPRnet/data/lpr_train'
     img_size = [94, 24]
 
     train_gen = TextImageGeneratorH5(h5_path=h5_path,

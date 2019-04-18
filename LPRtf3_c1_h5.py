@@ -31,8 +31,8 @@ TRAIN_SIZE = 93313
 BATCHES = TRAIN_SIZE//BATCH_SIZE
 test_num = 3
 
-ti = '/ssd/wfei/code/Plate_Recognition-LPRnet/data/lpr_train_color'         #训练集位置
-vi = '/ssd/wfei/code/Plate_Recognition-LPRnet/data/lpr_test_color'         #验证集位置
+ti = '/ssd/wfei/code/Plate_Recognition-LPRnet/data/lpr_train'         #训练集位置
+vi = '/ssd/wfei/code/Plate_Recognition-LPRnet/data/lpr_test'         #验证集位置
 img_size = [94, 24]
 tl = None
 vl = None
@@ -196,7 +196,7 @@ def train(a):
         #print(b_cost, steps)
         if steps > 0 and steps % REPORT_STEPS == 0:
             do_report(val_gen,test_num)
-            saver.save(session, "./model_h5/LPR_energy_c1.ckpt", global_step=steps)
+            saver.save(session, "./model_h5/LPR_grayh5.ckpt", global_step=steps)
         return b_cost, steps
 
     with tf.Session() as session:
@@ -236,7 +236,7 @@ def train(a):
                                  time.time() - start, lr))
         if a =='test':
             testi='/ssd/wfei/code/Plate_Recognition-LPRnet/data/lpr_test_color'
-            saver.restore(session, './model_h5/LPR_energy_c1.ckpt-42000')
+            saver.restore(session, './model_h5/LPR_energy_c1.ckpt-30000')
             test_gen = TextImageGeneratorH5(h5_path=testi,
                                            batch_size=BATCH_SIZE,
                                            img_size=img_size,
