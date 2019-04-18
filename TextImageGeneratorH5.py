@@ -98,9 +98,11 @@ class TextImageGeneratorH5:
             img = np.squeeze(self.X[j, ...])
             img = augment_data(img)
             img = cv2.resize(img, (self._img_w, self._img_h), interpolation=cv2.INTER_CUBIC)
+            #img = cv2.cvtColor(img,cv2.COLOR_RGB2GRAY)
             images[i, ...] = img[..., np.newaxis]
         images = np.transpose(images, axes=[0, 2, 1, 3])
         labels = self.labels[start:end, ...]
+        #print labels
         #print "Batch image shape:", images.shape
         #print "Batch label shape:", labels.shape
         targets = [np.asarray(i) for i in labels]
@@ -120,7 +122,7 @@ if __name__ == '__main__':
                                    img_size=img_size,
                                    num_channels=1,
                                    label_len=8)
-    for i in range(100):
-       print "Batch i"
+    for i in range(1):
+       print "Batch ", i 
        images, sparse_labels, seq_len = train_gen.next_batch()
        #print sparse_labels, seq_len

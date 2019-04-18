@@ -11,10 +11,10 @@ from TextImageGeneratorH5 import TextImageGeneratorH5, sparse_tuple_from
 
 from config import CHARS, dict, CHARS_DICT, NUM_CHARS
 
-os.environ["CUDA_VISIBLE_DEVICES"]="4,5,6,7"
+os.environ["CUDA_VISIBLE_DEVICES"]="4,5,6"
 
 #训练最大轮次
-num_epochs = 400
+num_epochs = 300
 
 #初始化学习速率
 INITIAL_LEARNING_RATE = 1e-3
@@ -204,7 +204,7 @@ def train(a):
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
         if a=='train':
              start_epoch = 0
-             #checkpoint = './model_c1/LPRAug.ckpt-30000'
+             #checkpoint = './model_h5/LPR_energy_c1.ckpt-30000'
              #saver.restore(session, checkpoint)
              #checkpoint_id = 30000
              #start_epoch = checkpoint_id // BATCHES

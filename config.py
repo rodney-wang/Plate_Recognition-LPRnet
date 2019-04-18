@@ -9,8 +9,10 @@ dict = {'A01':'京','A02':'津','A03':'沪','B02':'蒙',
         'S36':'陕','S37':'青', 'S38':'宁', 'S39':'新',
         'S40':'警', 'S41': '港', 'S42': '澳'}
 
-CHARS='1234567890QWERTYUPASDFGHJKLZXCVBNM京鄂津湘冀粤晋桂蒙琼辽渝吉川黑贵沪云苏藏浙陕皖甘闽青赣宁鲁新豫警港澳使领学试挂-'
+CHARS='1234567890QWERTYUPASDFGHJKLZXCVBNM京鄂津湘冀粤晋桂蒙琼辽渝吉川黑贵沪云苏藏浙陕皖甘闽青赣宁鲁新豫警港澳使领学试挂-'.decode('utf8')
 
+
+CHARS = [c.encode('utf8') for c in CHARS]
 CHARS_DICT = {char:i for i, char in enumerate(CHARS)}
 
 NUM_CHARS = len(CHARS)

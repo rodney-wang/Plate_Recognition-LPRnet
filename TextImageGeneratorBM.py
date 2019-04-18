@@ -47,11 +47,12 @@ class TextImageGeneratorBM:
                     self.labels.append(label)
                     self._num_examples += 1
                 elif len(chars) == 7:
-                    label = encode_label(chars).extend([73])
+                    label = np.append(encode_label(chars), 73)
                     self.labels.append(label)
                     self._num_examples += 1
                 else:
                     print "Skip ", bname, chars, "!!!"
+                print label    
         self.labels = np.float32(self.labels)
         self._num_batches = self._num_examples//self._batch_size +1
 
