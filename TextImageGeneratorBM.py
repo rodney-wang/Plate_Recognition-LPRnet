@@ -47,23 +47,26 @@ class TextImageGeneratorBM:
                     self.labels.append(label)
                     self._num_examples += 1
                 elif len(chars) == 7:
+                    self.filenames.append(filename)
                     label = np.append(encode_label(chars), 73)
                     self.labels.append(label)
                     self._num_examples += 1
                 else:
                     print "Skip ", bname, chars, "!!!"
-                print label    
+                #print label    
+        print "Total number of files, ", len(self.filenames)
+        print self._num_examples
         self.labels = np.float32(self.labels)
         self._num_batches = self._num_examples//self._batch_size +1
 
     def next_batch(self):
         # Shuffle the data
-        if self._next_index == 0:
+        """if self._next_index == 0:
             perm = np.arange(self._num_examples)
             np.random.shuffle(perm)
             self._filenames = [self.filenames[i] for i in perm]
             self._labels = self.labels[perm]
-
+        """    
         batch_size = self._batch_size
         start = self._next_index
         end = self._next_index + batch_size
@@ -82,20 +85,20 @@ class TextImageGeneratorBM:
         # labels = np.zeros([batch_size, self._label_len])
 
         for j, i in enumerate(range(start, end)):
-            fname = self._filenames[i]
+            fname = self.filenames[i]
             img = cv2.imread(os.path.join(self._img_dir, fname))
             img = cv2.resize(img, (self._img_w, self._img_h), interpolation=cv2.INTER_CUBIC)
             img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             img = img[:, :, np.newaxis]
             images[j, ...] = img
         images = np.transpose(images, axes=[0, 2, 1, 3])
-        labels = self._labels[start:end, ...]
+        labels = self.labels[start:end, ...]
         targets = [np.asarray(i) for i in labels]
         sparse_labels = sparse_tuple_from(targets)
         # input_length = np.zeros([batch_size, 1])
 
         seq_len = np.ones(self._batch_size) * 24
-        return images, sparse_labels, seq_len, self._filenames[start:end]
+        return images, sparse_labels, seq_len, self.filenames[start:end]
 
 def sparse_tuple_from(sequences, dtype=np.int32):
     """

@@ -33,13 +33,13 @@ def write_image_info_into_hdf5(file_name, data_tuple, phase):
     if total_size % single_size:
         groups += 1
     def process(file_name, data):
-        img_data = np.zeros((len(data_tuple), IMAGE_HEIGHT, IMAGE_WIDTH, 3), dtype = np.float32)
+        img_data = np.zeros((len(data_tuple), IMAGE_HEIGHT, IMAGE_WIDTH), dtype = np.float32)
         label_seq = 73*np.ones((len(data_tuple), LABEL_SEQ_LEN), dtype = np.float32)
         for i, datum in enumerate(data_tuple):
             img_path, numbers = datum
             label_seq[i, :len(numbers)] = numbers
             img = cv2.imread(img_path)
-            #img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE) #load as grayscale
+            img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE) #load as grayscale
             img = cv2.resize(img, (IMAGE_WIDTH, IMAGE_HEIGHT)) 
             #img = caffe.io.resize(img, (IMAGE_HEIGHT, IMAGE_WIDTH, 1))
             #img = np.transpose(img, (2, 0, 1))
@@ -94,9 +94,9 @@ def write_h5(train_csv, h5_path):
 
     #trainning_size = 86000   # number of images for trainning
     trainning_data = data_all
-    testing_data = data_all[:2000]
-    write_image_info_into_hdf5(os.path.join(h5_path, 'plate_trainning.list'), trainning_data, 'train')
-    write_image_info_into_hdf5(os.path.join(h5_path, 'plate_testing.list'), testing_data, 'test')
+    #testing_data = data_all[:2000]
+    #write_image_info_into_hdf5(os.path.join(h5_path, 'plate_trainning.list'), trainning_data, 'train')
+    #write_image_info_into_hdf5(os.path.join(h5_path, 'plate_testing.list'), testing_data, 'test')
 
 
 def parse_args():
