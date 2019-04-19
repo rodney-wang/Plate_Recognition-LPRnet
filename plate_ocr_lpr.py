@@ -4,7 +4,7 @@ import os
 import numpy as np
 from tensorflow.contrib import predictor
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 class PlateOCR:
 
     def __init__(self, model_dir='/ssd/wfei/code/Plate_Recognition-LPRnet/model_pb_h5', num_channel=1):
@@ -38,6 +38,7 @@ class PlateOCR:
         print "Prediction:      ", predictions['code2str_conversion/predicted'][0].decode('utf-8')
         print "Confidence Score:", predictions['confidence_score'][0]
         chars = predictions['code2str_conversion/predicted'][0].decode('utf-8')
+        chars = chars.replace('-', '')
         score = predictions['confidence_score'][0]
 
         return chars, score

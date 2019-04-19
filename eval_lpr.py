@@ -29,8 +29,8 @@ def run_lpr_and_write_result(plate_file, out_dir, pocr):
         print fname, out_str
         # with open(out_file, 'w', encoding='utf-8') as ff:
         with open(out_file, 'w') as ff:
-            #ff.write(out_str.encode('utf-8'))
-            ff.write(out_str)
+            ff.write(out_str.encode('utf-8'))
+            #ff.write(out_str)
     return True
 
 

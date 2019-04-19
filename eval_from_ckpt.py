@@ -105,7 +105,7 @@ def batch_eval(img_dir, label_file, out_dir):
         #saver.restore(session, './model/LPRk110k.ckpt-72000')
         #saver.restore(session, './model/LPRMore.ckpt-48000')
         #saver.restore(session, './model_h5/LPR_energy_c1.ckpt-72000')
-        saver.restore(session, './model_h5/LPR_grayh5.ckpt-90000')
+        saver.restore(session, './model_h5/LPR_grayh5.ckpt-60000')
 
         test_gen = TextImageGeneratorBM(img_dir=img_dir,
                                       label_file=label_file,
