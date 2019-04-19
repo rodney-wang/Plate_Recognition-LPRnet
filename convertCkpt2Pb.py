@@ -3,7 +3,7 @@ import argparse
 import tensorflow as tf
 import numpy as np
 from model import get_train_model
-from config_new import img_size, num_channels, label_len, NUM_CHARS
+from config import img_size, num_channels, label_len, NUM_CHARS
 from decode_tensor import decode_tensor
 
 os.environ["CUDA_VISIBLE_DEVICES"]="-1"
@@ -25,21 +25,21 @@ test_seq_len = tf.ones(BATCH_SIZE) * 24
 
 parser = argparse.ArgumentParser(description='Plate end to end test')
 parser.add_argument('--model_ckpt', default='/ssd//wfei/code/Plate_Recognition-LPRnet/model_h5/LPRc1.ckpt-63000',
-                        type=str, help='Input test image dir')
+                        type=str, help='Path to model checkpoint')
 parser.add_argument('--model_pb', default='./model_pb',
-                        type=str, help='Input test image dir')
-parser.add_argument('--num_channels', default=3,
-                        type=str, help='Input test image dir')
+                        type=str, help='Output model pb path')
+parser.add_argument('--num_channels', default=1,
+                        type=str, help='Number of channels')
 args = parser.parse_args()
 
 
-MODEL_DIR = './model_pb_c1'
+MODEL_DIR = './model_pb_h5'
 #MODEL_CKPT = './model69/LPRChar69.ckpt-63000'
 #MODEL_CKPT = './model69/LPRAug.ckpt-63000'
 #MODEL_CKPT = './modelk11/LPRChar69.ckpt-96000'
 #MODEL_CKPT = './modelk11/LPRAug.ckpt-78000'
 #MODEL_CKPT = './model_aug/LPRAug.ckpt-66000'
-MODEL_CKPT = './model_h5/LPRc1.ckpt-63000'
+MODEL_CKPT = './model_h5/LPR_grayh5.ckpt-60000'
 args.num_channels=1
 
 tf.reset_default_graph()
