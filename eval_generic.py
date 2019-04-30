@@ -8,6 +8,7 @@ def test(gts, test_folder, threshold, skip):
     tn = 0
     fp = 0
     fn = 0
+    count =0
     for dets_name in dets_txt:
         line = open(dets_name).readline()
         if len(line) == 0:
@@ -18,7 +19,10 @@ def test(gts, test_folder, threshold, skip):
         score = float(score)
         carplate = carplate.decode('utf8')
         carplate = carplate[skip:]
-        name = basename(dets_name)
+        name = basename(dets_name).replace('.txt', '')
+        #if name not in gts:
+        #    continue
+        count +=1
         gt = gts[name]
         #print gt, len(gt), carplate, len(carplate)
         if score > threshold:
@@ -44,6 +48,7 @@ def load_gt(ocrtxt_file, skip):
     for line in open(ocrtxt_file, 'r'):
         fname, label = line.split(';')
         bname = basename(fname).replace('_plate.jpg', '')
+        bname = bname.replace('.jpg_plate.png', '')
 
         plate = label.strip().decode('utf8')
         plate = plate.replace('|', '')
@@ -54,7 +59,7 @@ def load_gt(ocrtxt_file, skip):
 
 def eval(ocrlabel, res_dir, skip):
     gts = load_gt(ocrlabel, skip)
-    # print gts
+    #print gts
     tmax = 10.0
     tmin = 0.0
     tnow = 0.0
@@ -87,7 +92,7 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    skip =0
+    skip = args.skip
     print "Skip {} characters for evaluation!!!".format(skip)
 
     #res_base = '/ssd/wfei/data/benchmark/k11/'
