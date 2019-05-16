@@ -29,7 +29,8 @@ class TextImageGeneratorBM:
     def init(self):
         self.labels = []
         fs = os.listdir(self._img_dir)
-        plate_label = json.load(open(self._label_file))
+        #plate_label = json.load(open(self._label_file))
+        plate_label = load_gt(self._label_file, 0)
 
         for filename in fs:
             if filename.endswith('.png') or filename.endswith('.jpg'):
@@ -58,6 +59,8 @@ class TextImageGeneratorBM:
         print self._num_examples
         self.labels = np.float32(self.labels)
         self._num_batches = self._num_examples//self._batch_size +1
+
+
 
     def next_batch(self):
         # Shuffle the data
@@ -99,6 +102,20 @@ class TextImageGeneratorBM:
 
         seq_len = np.ones(self._batch_size) * 24
         return images, sparse_labels, seq_len, self.filenames[start:end]
+
+
+def load_gt(ocrtxt_file, skip):
+    gts = {}
+    for line in open(ocrtxt_file, 'r'):
+        fname, label = line.split(';')
+        bname = os.path.basename(fname).replace('_plate.jpg', '')
+
+        plate = label.strip().decode('utf8')
+        plate = plate.replace('|', '')
+        # print bname, plate
+        gts[bname] = plate[skip:]
+    print "Total number of gt", len(gts)
+    return gts
 
 def sparse_tuple_from(sequences, dtype=np.int32):
     """

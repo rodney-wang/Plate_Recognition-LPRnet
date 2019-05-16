@@ -19,6 +19,7 @@ def run_lpr_and_write_result(plate_file, out_dir, pocr):
         return
     chars, score = pocr(plate_file)
 
+
     if score >=0 and len(chars) != 0:
         fname = os.path.basename(plate_file).split('_plate')[0]
         fname = fname.replace('.jpg', '.txt')
