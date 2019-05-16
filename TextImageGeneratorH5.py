@@ -102,9 +102,10 @@ class TextImageGeneratorH5:
             images[i, ...] = img[..., np.newaxis]
         """
         images = self.X[start:end, ...]
+        images = np.squeeze(images)
         #print images, images.shape
-        #images = images[..., np.newaxis]
-        images = np.transpose(images, axes=[0, 3, 2, 1])
+        images = images[..., np.newaxis]
+        images = np.transpose(images, axes=[0, 2, 1, 3])
         labels = self.labels[start:end, ...]
         #print labels
         #print "Batch image shape:", images.shape

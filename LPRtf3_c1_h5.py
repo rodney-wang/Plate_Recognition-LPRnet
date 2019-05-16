@@ -11,10 +11,10 @@ from TextImageGeneratorH5 import TextImageGeneratorH5, sparse_tuple_from
 
 from config import CHARS, dict, CHARS_DICT, NUM_CHARS
 
-os.environ["CUDA_VISIBLE_DEVICES"]="2,3"
+os.environ["CUDA_VISIBLE_DEVICES"]="4,5"
 
 #训练最大轮次
-num_epochs = 300
+num_epochs = 100
 
 #初始化学习速率
 INITIAL_LEARNING_RATE = 1e-3
@@ -23,15 +23,15 @@ LEARNING_RATE_DECAY_FACTOR = 0.9  # The learning rate decay factor
 MOMENTUM = 0.9
 
 #输出字符串结果的步长间隔
-REPORT_STEPS = 3000
+REPORT_STEPS = 4000
 
 #训练集的数量
 BATCH_SIZE = 256
-TRAIN_SIZE = 93313
+TRAIN_SIZE = 234437 
 BATCHES = TRAIN_SIZE//BATCH_SIZE
 test_num = 3
 
-ti = '/ssd/wfei/code/Plate_Recognition-LPRnet/data/lpr_train'         #训练集位置
+ti = '/ssd/wfei/code/Plate_Recognition-LPRnet/data/wanda_train'         #训练集位置
 vi = '/ssd/wfei/code/Plate_Recognition-LPRnet/data/lpr_test'         #验证集位置
 img_size = [94, 24]
 tl = None
@@ -196,7 +196,7 @@ def train(a):
         #print(b_cost, steps)
         if steps > 0 and steps % REPORT_STEPS == 0:
             do_report(val_gen,test_num)
-            saver.save(session, "./model_h5/LPR_grayh5.ckpt", global_step=steps)
+            saver.save(session, "./model_wanda/LPR_wanda.ckpt", global_step=steps)
         return b_cost, steps
 
     with tf.Session() as session:
@@ -204,10 +204,10 @@ def train(a):
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
         if a=='train':
              start_epoch = 0
-             #checkpoint = './model_h5/LPR_energy_c1.ckpt-30000'
-             #saver.restore(session, checkpoint)
-             #checkpoint_id = 30000
-             #start_epoch = checkpoint_id // BATCHES
+             checkpoint = './model_h5/LPR_grayh5.ckpt-60000'
+             saver.restore(session, checkpoint)
+             checkpoint_id = 0
+             start_epoch = checkpoint_id // BATCHES
              for curr_epoch in range(start_epoch, start_epoch+num_epochs):
                 print("Epoch.......", curr_epoch)
                 train_cost = train_ler = 0
