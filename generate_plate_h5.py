@@ -95,7 +95,7 @@ def write_h5(train_csv, h5_path):
     #trainning_size = 86000   # number of images for trainning
     trainning_data = data_all
     #testing_data = data_all[:2000]
-    #write_image_info_into_hdf5(os.path.join(h5_path, 'plate_trainning.list'), trainning_data, 'train')
+    write_image_info_into_hdf5(os.path.join(h5_path, 'wanda_trainning.list'), trainning_data, 'wanda_train')
     #write_image_info_into_hdf5(os.path.join(h5_path, 'plate_testing.list'), testing_data, 'test')
 
 

@@ -45,7 +45,7 @@ class PlateOCR:
 
 if __name__ == '__main__':
 
-    test_img = '/mnt/soulfs2/wfei/data/plate.jpg'
+    test_img = '/mnt/soulfs2/wfei/data/plate_sample2.jpg'
     pocr = PlateOCR()
     chars, score = pocr(test_img)
     print chars, score

@@ -11,7 +11,7 @@ from TextImageGeneratorH5 import TextImageGeneratorH5, sparse_tuple_from
 
 from config import CHARS, dict, CHARS_DICT, NUM_CHARS
 
-os.environ["CUDA_VISIBLE_DEVICES"]="2,3"
+os.environ["CUDA_VISIBLE_DEVICES"]="4,5"
 
 #训练最大轮次
 num_epochs = 100
@@ -27,12 +27,12 @@ REPORT_STEPS = 3000
 
 #训练集的数量
 BATCH_SIZE = 256
-TRAIN_SIZE = 93313
+TRAIN_SIZE = 234437 
 BATCHES = TRAIN_SIZE//BATCH_SIZE
 test_num = 3
 
-ti = '/ssd/wfei/code/Plate_Recognition-LPRnet/data/lpr_train_color'         #训练集位置
-vi = '/ssd/wfei/code/Plate_Recognition-LPRnet/data/lpr_test_color'         #验证集位置
+ti = '/ssd/wfei/code/Plate_Recognition-LPRnet/data/wanda_train'         #训练集位置
+vi = '/ssd/wfei/code/Plate_Recognition-LPRnet/data/lpr_test'         #验证集位置
 img_size = [94, 24]
 tl = None
 vl = None
