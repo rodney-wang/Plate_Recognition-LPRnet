@@ -3,6 +3,7 @@ import os
 import numpy as np
 import cv2
 import json
+import pdb
 
 from config import CHARS, dict, CHARS_DICT, NUM_CHARS
 
@@ -34,7 +35,9 @@ class TextImageGeneratorBM:
 
         for filename in fs:
             if filename.endswith('.png') or filename.endswith('.jpg'):
-                bname = filename.split('_plate.png')[0]
+                bname = filename.split('_plate')[0]
+                bname = os.path.splitext(bname)[0]
+                #pdb.set_trace()
                 if bname in plate_label:
                     chars = plate_label[bname]
                 else:
@@ -216,7 +219,7 @@ def write_ocr(detected_list, scores, filenames, out_dir):
         detect_number = detected_list[idx]
         detect = ''.join(detect_number)
         score = scores[idx]
-        fname = filenames[idx].split('_plate.png')[0]
+        fname = filenames[idx].split('_plate.jpg')[0]
         fname = fname.replace('.jpg', '.txt')
         fpath = os.path.join(out_dir, fname)
 
