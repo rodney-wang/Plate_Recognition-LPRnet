@@ -45,6 +45,19 @@ def resize_image(img):
     return img
 
 
+def load_gt(ocrtxt_file, skip):
+    gts ={}
+    for line in open(ocrtxt_file, 'r'):
+        fname, label = line.split(';')
+        bname = os.path.basename(fname).replace('_plate.jpg', '')
+        bname = bname.replace('.jpg_plate.png', '')
+
+        plate = label.strip().decode('utf8')
+        plate = plate.replace('|', '')
+        #print bname, plate
+        gts[bname] = plate[skip:]
+    print "Total number of gt", len(gts)
+    return gts
 
 def main(img_dir, lpr_model):
     files = get_images(img_dir)
@@ -77,7 +90,7 @@ def main(img_dir, lpr_model):
 
 
 
-def batch_eval(img_dir, label_file, out_dir, model_ckpt):
+def batch_eval(img_dir, ocr_txt, out_dir, model_ckpt):
 
     global_step = tf.Variable(0, trainable=False)
     logits, inputs, targets, seq_len = get_train_model(num_channels, label_len, BATCH_SIZE, img_size)
@@ -135,8 +148,8 @@ def parse_args():
                         type=str, help='Input test image dir')
     parser.add_argument('--out_dir', default='/ssd/wfei/data/testing_data/k11_tfresults_lpr_v2.0',
                         type=str, help='Output dir')
-    parser.add_argument('--label_file', default='/ssd/wfei/data/testing_data/k11_benchmark_label.json',
-                        type=str, help='Output json file')
+    parser.add_argument('--label_file', default='/ssd/wfei/data/testing_data/k11_benchmark_ocrlabel.txt',
+                        type=str, help='Label file in OCR txt format')
     parser.add_argument('--model_ckpt', default='./model_wanda/LPR_wanda.ckpt-124000',
                         type=str, help='LPR checkpoint model path')
     args = parser.parse_args()
