@@ -77,7 +77,7 @@ def main(img_dir, lpr_model):
 
 
 
-def batch_eval(img_dir, label_file, out_dir):
+def batch_eval(img_dir, label_file, out_dir, model_ckpt):
 
     global_step = tf.Variable(0, trainable=False)
     logits, inputs, targets, seq_len = get_train_model(num_channels, label_len, BATCH_SIZE, img_size)
@@ -102,10 +102,9 @@ def batch_eval(img_dir, label_file, out_dir):
     with tf.Session() as session:
         session.run(init)
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
-        #saver.restore(session, './model/LPRk110k.ckpt-72000')
-        #saver.restore(session, './model/LPRMore.ckpt-48000')
         #saver.restore(session, './model_h5/LPR_energy_c1.ckpt-72000')
-        saver.restore(session, './model_wanda/LPR_wanda.ckpt-124000')
+        #saver.restore(session, './model_wanda/LPR_wanda.ckpt-124000')
+        saver.restore(session, model_ckpt)
 
         test_gen = TextImageGeneratorBM(img_dir=img_dir,
                                       label_file=label_file,
@@ -135,10 +134,11 @@ def parse_args():
     parser.add_argument('--img_dir', default='/ssd/wfei/data/testing_data/k11_plates_v1.2',
                         type=str, help='Input test image dir')
     parser.add_argument('--out_dir', default='/ssd/wfei/data/testing_data/k11_tfresults_lpr_v2.0',
-                        type=str, help='Output image dir')
+                        type=str, help='Output dir')
     parser.add_argument('--label_file', default='/ssd/wfei/data/testing_data/k11_benchmark_label.json',
-                        type=str, help='Output image dir')
-
+                        type=str, help='Output json file')
+    parser.add_argument('--model_ckpt', default='./model_wanda/LPR_wanda.ckpt-124000',
+                        type=str, help='LPR checkpoint model path')
     args = parser.parse_args()
     return args
 
@@ -148,4 +148,4 @@ if __name__ == '__main__':
 
     args = parse_args()
 
-    batch_eval(args.img_dir, args.label_file, args.out_dir)
+    batch_eval(args.img_dir, args.label_file, args.out_dir, args.model_ckpt)
