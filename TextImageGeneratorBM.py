@@ -36,7 +36,7 @@ class TextImageGeneratorBM:
         for filename in fs:
             if filename.endswith('.png') or filename.endswith('.jpg'):
                 bname = filename.split('_plate')[0]
-                bname = os.path.splitext(bname)[0]
+                #bname = os.path.splitext(bname)[0]
                 #pdb.set_trace()
                 if bname in plate_label:
                     chars = plate_label[bname]

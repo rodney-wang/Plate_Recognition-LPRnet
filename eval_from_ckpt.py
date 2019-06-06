@@ -45,19 +45,6 @@ def resize_image(img):
     return img
 
 
-def load_gt(ocrtxt_file, skip):
-    gts ={}
-    for line in open(ocrtxt_file, 'r'):
-        fname, label = line.split(';')
-        bname = os.path.basename(fname).replace('_plate.jpg', '')
-        bname = bname.replace('.jpg_plate.png', '')
-
-        plate = label.strip().decode('utf8')
-        plate = plate.replace('|', '')
-        #print bname, plate
-        gts[bname] = plate[skip:]
-    print "Total number of gt", len(gts)
-    return gts
 
 def main(img_dir, lpr_model):
     files = get_images(img_dir)
@@ -90,7 +77,7 @@ def main(img_dir, lpr_model):
 
 
 
-def batch_eval(img_dir, ocr_txt, out_dir, model_ckpt):
+def batch_eval(img_dir, label_file, out_dir, model_ckpt):
 
     global_step = tf.Variable(0, trainable=False)
     logits, inputs, targets, seq_len = get_train_model(num_channels, label_len, BATCH_SIZE, img_size)
