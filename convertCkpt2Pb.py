@@ -33,13 +33,10 @@ parser.add_argument('--num_channels', default=1,
 args = parser.parse_args()
 
 
-MODEL_DIR = './model_wanda_pb'
-#MODEL_CKPT = './model69/LPRChar69.ckpt-63000'
-#MODEL_CKPT = './model69/LPRAug.ckpt-63000'
-#MODEL_CKPT = './modelk11/LPRChar69.ckpt-96000'
-#MODEL_CKPT = './modelk11/LPRAug.ckpt-78000'
+MODEL_DIR = './model_wanda_pb_0604'
 #MODEL_CKPT = './model_aug/LPRAug.ckpt-66000'
 MODEL_CKPT = './model_wanda/LPR_wanda.ckpt-100000'
+MODEL_CKPT = './model_wanda_fresh_0604/LPR_wanda.ckpt-150000' 
 args.num_channels=1
 
 tf.reset_default_graph()

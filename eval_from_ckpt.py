@@ -77,7 +77,7 @@ def main(img_dir, lpr_model):
 
 
 
-def batch_eval(img_dir, label_file, out_dir, model_ckpt):
+def batch_eval(label_file, out_dir, model_ckpt):
 
     global_step = tf.Variable(0, trainable=False)
     logits, inputs, targets, seq_len = get_train_model(num_channels, label_len, BATCH_SIZE, img_size)
