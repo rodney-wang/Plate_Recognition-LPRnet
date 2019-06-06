@@ -8,8 +8,8 @@ import pdb
 from config import CHARS, dict, CHARS_DICT, NUM_CHARS
 
 class TextImageGeneratorBM:
-    def __init__(self, img_dir, label_file, batch_size, img_size, num_channels=3, label_len=8):
-        self._img_dir = img_dir
+    def __init__(self, label_file, batch_size, img_size, num_channels=3, label_len=8):
+        #self._img_dir = img_dir
         self._label_file = label_file
         self._batch_size = batch_size
         self._num_channels = num_channels
@@ -29,19 +29,10 @@ class TextImageGeneratorBM:
 
     def init(self):
         self.labels = []
-        fs = os.listdir(self._img_dir)
-        #plate_label = json.load(open(self._label_file))
         plate_label = load_gt(self._label_file, 0)
 
-        for filename in fs:
-            if filename.endswith('.png') or filename.endswith('.jpg'):
-                bname = filename.split('_plate')[0]
-                #bname = os.path.splitext(bname)[0]
-                #pdb.set_trace()
-                if bname in plate_label:
-                    chars = plate_label[bname]
-                else:
-                    continue
+        for filename, chars in plate_label.iteritems():
+            if True:
                 #if '\u4e00' <= label[0] <= '\u9fff':
                 #    label = filename[:7]
                 if len(chars) >=8:
@@ -56,7 +47,7 @@ class TextImageGeneratorBM:
                     self.labels.append(label)
                     self._num_examples += 1
                 else:
-                    print "Skip ", bname, chars.encode('utf8'),  "!!!"
+                    print "Skip ", filename, chars.encode('utf8'),  "!!!"
                 #print label    
         print "Total number of files, ", len(self.filenames)
         print self._num_examples
@@ -92,7 +83,7 @@ class TextImageGeneratorBM:
 
         for j, i in enumerate(range(start, end)):
             fname = self.filenames[i]
-            img = cv2.imread(os.path.join(self._img_dir, fname))
+            img = cv2.imread(fname)
             img = cv2.resize(img, (self._img_w, self._img_h), interpolation=cv2.INTER_CUBIC)
             img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             img = img[:, :, np.newaxis]
@@ -111,12 +102,12 @@ def load_gt(ocrtxt_file, skip):
     gts = {}
     for line in open(ocrtxt_file, 'r'):
         fname, label = line.split(';')
-        bname = os.path.basename(fname).replace('_plate.jpg', '')
+        #bname = os.path.basename(fname).replace('_plate.jpg', '')
 
         plate = label.strip().decode('utf8')
         plate = plate.replace('|', '')
         # print bname, plate
-        gts[bname] = plate[skip:]
+        gts[fname] = plate[skip:]
     print "Total number of gt", len(gts)
     return gts
 

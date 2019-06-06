@@ -8,7 +8,7 @@ import glob
 import tensorflow as tf
 import time
 from model import get_train_model
-from TextImageGeneratorBM import TextImageGeneratorBM, report_accuracy, write_ocr
+from TextImageGeneratorFromOCRTxt import TextImageGeneratorBM, report_accuracy, write_ocr
 
 #from config_new import BATCH_SIZE, img_size, num_channels, label_len, NUM_CHARS
 from config import  img_size, num_channels, label_len, NUM_CHARS
@@ -106,8 +106,7 @@ def batch_eval(img_dir, label_file, out_dir, model_ckpt):
         #saver.restore(session, './model_wanda/LPR_wanda.ckpt-124000')
         saver.restore(session, model_ckpt)
 
-        test_gen = TextImageGeneratorBM(img_dir=img_dir,
-                                      label_file=label_file,
+        test_gen = TextImageGeneratorBM(label_file=label_file,
                                       batch_size=BATCH_SIZE,
                                       img_size=img_size,
                                       num_channels=num_channels,
@@ -134,9 +133,9 @@ def batch_eval(img_dir, label_file, out_dir, model_ckpt):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Plate end to end test')
-    parser.add_argument('--img_dir', default='/ssd/wfei/data/testing_data/k11_plates_v1.2',
-                        type=str, help='Input test image dir')
+    parser = argparse.ArgumentParser(description='Plate LPRNet test with ')
+    #parser.add_argument('--img_dir', default='/ssd/wfei/data/testing_data/k11_plates_v1.2',
+    #                    type=str, help='Input test image dir')
     parser.add_argument('--out_dir', default='/ssd/wfei/data/testing_data/k11_tfresults_lpr_v2.0',
                         type=str, help='Output dir')
     parser.add_argument('--label_file', default='/ssd/wfei/data/testing_data/k11_benchmark_ocrlabel.txt',
@@ -152,4 +151,4 @@ if __name__ == '__main__':
 
     args = parse_args()
 
-    batch_eval(args.img_dir, args.label_file, args.out_dir, args.model_ckpt)
+    batch_eval(args.label_file, args.out_dir, args.model_ckpt)

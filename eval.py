@@ -8,7 +8,7 @@ import glob
 import tensorflow as tf
 import time
 from model import get_train_model
-from TextImageGeneratorBM import TextImageGeneratorBM, report_accuracy, write_ocr
+from TextImageGeneratorFromOCRTxt import TextImageGeneratorBM, report_accuracy, write_ocr
 
 from config import img_size, label_len, NUM_CHARS
 #from config import BATCH_SIZE, img_size, num_channels, label_len, NUM_CHARS
