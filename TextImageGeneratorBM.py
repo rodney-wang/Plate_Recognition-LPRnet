@@ -56,7 +56,7 @@ class TextImageGeneratorBM:
                     self.labels.append(label)
                     self._num_examples += 1
                 else:
-                    print "Skip ", bname, chars, "!!!"
+                    print "Skip ", bname, chars.encode('utf8'),  "!!!"
                 #print label    
         print "Total number of files, ", len(self.filenames)
         print self._num_examples
@@ -195,12 +195,12 @@ def report_accuracy(decoded_list, test_targets, scores):
         gt = ''.join(number).decode('utf-8')
         detect = ''.join(detect_number).decode('utf-8')
         if not hit:
-            print hit, gt, "(", len(number), ") <-------> ", detect, "(", len(detect_number), ")", scores[idx]
+            print hit, gt.encode('utf8'), "(", len(number), ") <-------> ", detect.encode('utf8'), "(", len(detect_number), ")", scores[idx]
         if hit:
             true_numer = true_numer + 1
     print("Test Accuracy:", true_numer * 1.0 / len(original_list))
 
-    return detected_list
+    return detected_list, true_numer, len(original_list)
 
 def write_ocr(detected_list, scores, filenames, out_dir):
     """

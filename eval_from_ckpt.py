@@ -114,6 +114,7 @@ def batch_eval(img_dir, label_file, out_dir, model_ckpt):
                                       label_len=label_len)
         nbatches = test_gen._num_batches
         print('### Number of batches = {}'.format(nbatches))
+        total_all, tp_all = 0, 0
         for i in range(nbatches):
             test_inputs, test_targets, test_seq_len, img_names = test_gen.next_batch()
             test_feed = {inputs: test_inputs,
@@ -124,8 +125,11 @@ def batch_eval(img_dir, label_file, out_dir, model_ckpt):
             tim = time.time() - st
             print('time:%s' % tim)
             #print(scores)
-            detected_list = report_accuracy(dd, test_targets, scores)
+            detected_list, tp, total  = report_accuracy(dd, test_targets, scores)
+            tp_all += tp
+            total_all += total
             write_ocr(detected_list, scores, img_names, out_dir)
+        print "###Overall accuracy=", tp_all/float(total_all)
 
 
 
