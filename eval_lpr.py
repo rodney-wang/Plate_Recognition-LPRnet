@@ -46,7 +46,11 @@ def lpr_eval_end2end(ocrtxt_file, out_dir, model_path, skip):
         plate_file, label = line.split(';')
         run_lpr_and_write_result(plate_file, out_dir, pocr)
     print("--- %s seconds ---" % (time.time() - start_time))
-    eval(ocrtxt_file, out_dir, skip)
+    
+    print("\n--- Skip 0 evaluation ---")    
+    eval(ocrtxt_file, out_dir, 0)      
+    print("\n--- Skip 1 evaluation ---")
+    eval(ocrtxt_file, out_dir, 1)     
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Plate Segmentation')
