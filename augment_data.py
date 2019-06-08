@@ -29,7 +29,7 @@ def augment_brightness(image):
 def augment_brightness_camera_images(image):
     image1 = cv2.cvtColor(image,cv2.COLOR_RGB2HSV)
     image1 = np.array(image1, dtype = np.float64)
-    random_bright = .5+np.random.uniform()
+    random_bright = .3+np.random.uniform()
     image1[:,:,2] = image1[:,:,2]*random_bright
     image1[:,:,2][image1[:,:,2]>255]  = 255
     image1 = np.array(image1, dtype = np.uint8)
