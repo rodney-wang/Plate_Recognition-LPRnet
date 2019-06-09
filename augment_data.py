@@ -75,7 +75,7 @@ def augment_data(image):
     if random.random()>0.8:
         #image = 255-image
         image = np.invert(image)
-    image = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
+    #image = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
     return image
 
 
