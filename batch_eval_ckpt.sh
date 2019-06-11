@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-LOG_FILE="./log_wanda4k_fresh.txt"
+LOG_FILE="./log_k11.txt"
 > $LOG_FILE
 #for ((i=60000;i<=200000;i=i+10000)); do
 #    echo -e "\n\n#### Evaluating model $i" 2>&1 >> $LOG_FILE
@@ -10,10 +10,18 @@ LOG_FILE="./log_wanda4k_fresh.txt"
 #         --model_ckpt ./model_wanda_fresh_0604/LPR_wanda.ckpt-${i}  2>&1 | tee -a $LOG_FILE ;
 #done
 
-for ((i=60000;i<=185000;i=i+10000)); do
+#for ((i=60000;i<=185000;i=i+10000)); do
+#    echo -e "\n\n#### Evaluating model $i" 2>&1 >> $LOG_FILE
+#    python eval_from_ckpt.py  \
+#         --out_dir /ssd/wfei/results/wanda_4k_lprresults_v2.2 \
+#         --label_file /ssd/wfei/data/testing_data/wanda_benchmark_4k_ocrlabel.txt \
+#         --model_ckpt ./model_wanda_fresh_0604/LPR_wanda.ckpt-${i}  2>&1 | tee -a $LOG_FILE ;
+#done
+
+for ((i=170000;i<=200000;i=i+10000)); do
     echo -e "\n\n#### Evaluating model $i" 2>&1 >> $LOG_FILE
     python eval_from_ckpt.py  \
-         --out_dir /ssd/wfei/results/wanda_4k_lprresults_v2.2 \
-         --label_file /ssd/wfei/data/testing_data/wanda_benchmark_4k_ocrlabel.txt \
-         --model_ckpt ./model_wanda_fresh_0604/LPR_wanda.ckpt-${i}  2>&1 | tee -a $LOG_FILE ;
+         --out_dir /ssd/wfei/results/k11_4k_lprresults_v2.0 \
+         --label_file /ssd/wfei/data/testing_data/k11_benchmark_ocrlabel.txt  \
+         --model_ckpt ./model_k11/LPR_k11.ckpt-${i}  2>&1 | tee -a $LOG_FILE ;
 done
