@@ -14,7 +14,7 @@ from config import CHARS, dict, CHARS_DICT, NUM_CHARS, img_size
 os.environ["CUDA_VISIBLE_DEVICES"]="2,3"
 
 #训练最大轮次
-num_epochs = 100
+num_epochs = 400
 
 #初始化学习速率
 INITIAL_LEARNING_RATE = 1e-3
@@ -23,16 +23,16 @@ LEARNING_RATE_DECAY_FACTOR = 0.9  # The learning rate decay factor
 MOMENTUM = 0.9
 
 #输出字符串结果的步长间隔
-REPORT_STEPS = 4000
+REPORT_STEPS = 5000
 
 #训练集的数量
 BATCH_SIZE = 256
-TRAIN_SIZE = 161000 
+TRAIN_SIZE = 271000 
 BATCHES = TRAIN_SIZE//BATCH_SIZE
 test_num = 3
 
-ti = '/ssd/wfei/code/Plate_Recognition-LPRnet/data/wanda_train_0604'         #训练集位置
-vi = '/ssd/wfei/code/Plate_Recognition-LPRnet/data/lpr_test'         #验证集位置
+ti = '/ssd/wfei/code/Plate_Recognition-LPRnet/data/heavy0612'         #训练集位置
+vi = '/ssd/wfei/code/Plate_Recognition-LPRnet/data/heavy_test'         #验证集位置
 #img_size = [188, 48]
 tl = None
 vl = None
@@ -112,7 +112,6 @@ def train(a):
                                                LEARNING_RATE_DECAY_FACTOR,
                                                staircase=True)
 
-    print "LEARNING RATE!!!"
     logits, inputs, targets, seq_len = get_train_model(num_channels, label_len, BATCH_SIZE, img_size, True, True)
     logits = tf.transpose(logits, (1, 0, 2))
     # tragets是一个稀疏矩阵
@@ -123,17 +122,14 @@ def train(a):
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
     with tf.control_dependencies(update_ops):
         optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss, global_step=global_step)
-    print "After Optimizer!!!"
 
     # 前面说的划分块之后找每块的类属概率分布，ctc_beam_search_decoder方法,是每次找最大的K个概率分布
     # 还有一种贪心策略是只找概率最大那个，也就是K=1的情况ctc_ greedy_decoder
     decoded, log_prob = tf.nn.ctc_beam_search_decoder(logits, seq_len, merge_repeated=False, top_paths=3)
 
     acc = tf.reduce_mean(tf.edit_distance(tf.cast(decoded[0], tf.int32), targets))
-    print "After ACC!!!"
 
     init = tf.global_variables_initializer()
-    print "After Global TensorFlow Init!!!"
 
     def report_accuracy(decoded_list, test_targets):
         original_list = decode_sparse_tensor(test_targets)
@@ -196,7 +192,7 @@ def train(a):
         #print(b_cost, steps)
         if steps > 0 and steps % REPORT_STEPS == 0:
             do_report(val_gen,test_num)
-            saver.save(session, "./model_wanda_0604/LPR_wanda.ckpt", global_step=steps)
+            saver.save(session, "./model_heavy/LPR_heavy.ckpt", global_step=steps)
         return b_cost, steps
 
     with tf.Session() as session:
@@ -204,10 +200,10 @@ def train(a):
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=100)
         if a=='train':
              start_epoch = 0
-             checkpoint = './model_wanda/LPR_wanda.ckpt-80000'
-             saver.restore(session, checkpoint)
-             checkpoint_id = 0
-             start_epoch = checkpoint_id // BATCHES
+             #checkpoint = './model_wanda/LPR_wanda.ckpt-80000'
+             #saver.restore(session, checkpoint)
+             #checkpoint_id = 0
+             #start_epoch = checkpoint_id // BATCHES
              for curr_epoch in range(start_epoch, start_epoch+num_epochs):
                 print("Epoch.......", curr_epoch)
                 train_cost = train_ler = 0

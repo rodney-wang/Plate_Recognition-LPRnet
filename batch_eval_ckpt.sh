@@ -18,10 +18,10 @@ LOG_FILE="./log_k11.txt"
 #         --model_ckpt ./model_wanda_fresh_0604/LPR_wanda.ckpt-${i}  2>&1 | tee -a $LOG_FILE ;
 #done
 
-for ((i=170000;i<=200000;i=i+10000)); do
+for ((i=70000;i<=140000;i=i+10000)); do
     echo -e "\n\n#### Evaluating model $i" 2>&1 >> $LOG_FILE
     python eval_from_ckpt.py  \
          --out_dir /ssd/wfei/results/k11_4k_lprresults_v2.0 \
          --label_file /ssd/wfei/data/testing_data/k11_benchmark_ocrlabel.txt  \
-         --model_ckpt ./model_k11/LPR_k11.ckpt-${i}  2>&1 | tee -a $LOG_FILE ;
+         --model_ckpt ./model_k11/LPR_k11_trans.ckpt-${i}  2>&1 | tee -a $LOG_FILE ;
 done
