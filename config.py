@@ -17,7 +17,7 @@ CHARS_DICT = {char:i for i, char in enumerate(CHARS)}
 
 NUM_CHARS = len(CHARS)
 
-img_size = [94, 24]
+img_size = [188, 48]
 
 label_len =8
 

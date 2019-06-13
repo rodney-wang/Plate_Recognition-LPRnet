@@ -120,7 +120,7 @@ class TextImageGeneratorH5:
 
 if __name__ == '__main__':
     h5_path = '/ssd/wfei/code/Plate_Recognition-LPRnet/data/lpr_train'
-    img_size = [94, 24]
+    img_size = [188, 48]
 
     train_gen = TextImageGeneratorH5(h5_path=h5_path,
                                    batch_size=256,

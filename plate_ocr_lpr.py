@@ -21,7 +21,7 @@ class PlateOCR:
             print('File does not exist')
             return
         img = cv2.imread(plate_file)
-        img = cv2.resize(img, (94, 24))
+        img = cv2.resize(img, (188, 48))
         if self.num_channel == 1:
             img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             images = img[np.newaxis, :, :, np.newaxis]

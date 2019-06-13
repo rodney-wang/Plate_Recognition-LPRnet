@@ -10,11 +10,12 @@ import json
 import random
 import argparse
 import codecs
+from config import img_size
 from augment_data import augment_data
 import pdb
 
 #CAFFE_ROOT = os.getcwd()   # assume you are in $CAFFE_ROOT$ dir
-IMAGE_WIDTH, IMAGE_HEIGHT = 94, 24
+IMAGE_WIDTH, IMAGE_HEIGHT = img_size
 LABEL_SEQ_LEN = 8
 char_dict = json.load(open('/mnt/soulfs2/wfei/code/crnn.caffe/examples/lprnet/utils/carplate.json', 'r'))
 num_dict =  {v: k for k, v in char_dict.iteritems()}

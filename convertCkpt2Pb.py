@@ -37,6 +37,7 @@ MODEL_DIR = './model_pb/model_k11_pb_0610'
 MODEL_CKPT = './model_wanda/LPR_wanda.ckpt-100000'
 MODEL_CKPT = './model_wanda_fresh_0604/LPR_wanda.ckpt-150000' 
 MODEL_CKPT = './model_k11/LPR_k11.ckpt-100000'
+MODEL_CKPT = './model/LPRtf3.ckpt-72000'
 args.num_channels=1
 
 tf.reset_default_graph()

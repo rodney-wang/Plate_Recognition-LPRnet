@@ -35,7 +35,25 @@ def get_train_model(num_channels, label_len, b, img_size, training=False, traina
     seq_len = tf.placeholder(tf.int32, [None])
     x = inputs
 
-    x = conv(x,num_channels,64,ksize=[3,3])
+    # **** Begin: HeavyDuty model 增加一个layer *****
+    x = conv(x, num_channels, 32, ksize=[3, 3])
+    x = tf.layers.batch_normalization(x, training=training, trainable=trainable)
+    x = tf.nn.relu(x)
+    x = tf.nn.max_pool(x,
+                       ksize=[1, 3, 3, 1],
+                       strides=[1, 1, 1, 1],
+                       padding='SAME')
+    x = small_basic_block(x, 32, 32)
+    x = tf.layers.batch_normalization(x,  training=training, trainable=trainable)
+    x = tf.nn.relu(x)
+    x = tf.nn.max_pool(x,
+                          ksize=[1, 3, 3, 1],
+                          strides=[1, 2, 2, 1],
+                          padding='SAME')
+    ipt  = x
+    # **** End 增加的layer ********
+
+    x = conv(x,32,64,ksize=[3,3])
     x = tf.layers.batch_normalization(x, training=training, trainable=trainable)
     x = tf.nn.relu(x)
     x = tf.nn.max_pool(x,
@@ -80,7 +98,7 @@ def get_train_model(num_channels, label_len, b, img_size, training=False, traina
     #x1 = conv(inputs,num_channels,num_channels,ksize = (5,1))
 
 
-    x1 = tf.nn.avg_pool(inputs,
+    x1 = tf.nn.avg_pool(ipt,
                        ksize=[1, 4, 1, 1],
                        strides=[1, 4, 1, 1],
                        padding='SAME')
