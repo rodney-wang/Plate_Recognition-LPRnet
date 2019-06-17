@@ -14,7 +14,7 @@ from config import CHARS, dict, CHARS_DICT, NUM_CHARS, img_size
 os.environ["CUDA_VISIBLE_DEVICES"]="2,3"
 
 #训练最大轮次
-num_epochs = 400
+num_epochs = 300
 
 #初始化学习速率
 INITIAL_LEARNING_RATE = 1e-3
@@ -27,11 +27,11 @@ REPORT_STEPS = 5000
 
 #训练集的数量
 BATCH_SIZE = 256
-TRAIN_SIZE = 271000 
+TRAIN_SIZE = 114500 
 BATCHES = TRAIN_SIZE//BATCH_SIZE
 test_num = 3
 
-ti = '/ssd/wfei/code/Plate_Recognition-LPRnet/data/heavy0612'         #训练集位置
+ti = '/ssd/wfei/code/Plate_Recognition-LPRnet/data/heavy0614'         #训练集位置
 vi = '/ssd/wfei/code/Plate_Recognition-LPRnet/data/heavy_test'         #验证集位置
 #img_size = [188, 48]
 tl = None
