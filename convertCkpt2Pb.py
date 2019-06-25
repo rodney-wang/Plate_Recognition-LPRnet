@@ -45,7 +45,8 @@ eval_graph = tf.Graph()
 
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
-exporter = tf.saved_model.builder.SavedModelBuilder(MODEL_DIR)
+#exporter = tf.saved_model.builder.SavedModelBuilder(MODEL_DIR)
+exporter = tf.saved_model.builder.SavedModelBuilder(args.model_pb)
 
 with tf.Session(config=config, graph=eval_graph) as sess:
 
@@ -72,7 +73,7 @@ with tf.Session(config=config, graph=eval_graph) as sess:
     saver = tf.train.Saver(tf.global_variables(), max_to_keep=4)
     print tf.global_variables()
     #saver = tf.train.import_meta_graph(MODEL_CKPT + '.meta', clear_devices=True)
-    saver.restore(sess, MODEL_CKPT)
+    saver.restore(sess, args.model_ckpt)
 
     exporter.add_meta_graph_and_variables(
         sess,
