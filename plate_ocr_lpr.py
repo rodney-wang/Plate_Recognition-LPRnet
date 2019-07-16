@@ -21,6 +21,7 @@ class PlateOCR:
             print('File does not exist')
             return
         img = cv2.imread(plate_file)
+        height_norm =img.shape[0]/10.
         img = cv2.resize(img, (94, 24))
         if self.num_channel == 1:
             img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -41,7 +42,7 @@ class PlateOCR:
         chars = chars.replace('-', '')
         score = predictions['confidence_score'][0]
 
-        return chars, score
+        return chars,height_norm 
 
 if __name__ == '__main__':
 
