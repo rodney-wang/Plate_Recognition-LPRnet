@@ -11,10 +11,10 @@ from TextImageGeneratorH5 import TextImageGeneratorH5, sparse_tuple_from
 
 from config import CHARS, dict, CHARS_DICT, NUM_CHARS
 
-os.environ["CUDA_VISIBLE_DEVICES"]="2,3"
+os.environ["CUDA_VISIBLE_DEVICES"]="3,5"
 
 #训练最大轮次
-num_epochs = 300
+num_epochs = 200
 
 #初始化学习速率
 INITIAL_LEARNING_RATE = 1e-3
@@ -27,7 +27,7 @@ REPORT_STEPS = 5000
 
 #训练集的数量
 BATCH_SIZE = 256
-TRAIN_SIZE = 223000 
+TRAIN_SIZE = 123300 
 BATCHES = TRAIN_SIZE//BATCH_SIZE
 test_num = 3
 
