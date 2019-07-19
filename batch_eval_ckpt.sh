@@ -18,7 +18,7 @@ LOG_FILE="./log_k11.txt"
 #         --model_ckpt ./model_wanda_fresh_0604/LPR_wanda.ckpt-${i}  2>&1 | tee -a $LOG_FILE ;
 #done
 
-for ((i=170000;i<=200000;i=i+10000)); do
+for ((i=60000;i<=190000;i=i+10000)); do
     echo -e "\n\n#### Evaluating model $i" 2>&1 >> $LOG_FILE
     python eval_from_ckpt.py  \
          --out_dir /ssd/wfei/results/k11_4k_lprresults_v2.0 \
