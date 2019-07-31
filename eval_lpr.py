@@ -27,7 +27,7 @@ def run_lpr_and_write_result(plate_file, out_dir, pocr):
         out_file = os.path.join(out_dir, fname)
 
         out_str = ' '.join([chars, str(score)])
-        print fname, out_str
+        #print fname, out_str
         # with open(out_file, 'w', encoding='utf-8') as ff:
         with open(out_file, 'w') as ff:
             ff.write(out_str.encode('utf-8'))
