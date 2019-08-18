@@ -35,8 +35,8 @@ class PlateOCR:
         # "is_train": False}
 
         predictions = self.predict_fn(inputs)
-        print "Prediction:      ", predictions['code2str_conversion/predicted'][0].decode('utf-8')
-        print "Confidence Score:", predictions['confidence_score'][0]
+        #print "Prediction:      ", predictions['code2str_conversion/predicted'][0].decode('utf-8')
+        #print "Confidence Score:", predictions['confidence_score'][0]
         chars = predictions['code2str_conversion/predicted'][0].decode('utf-8')
         chars = chars.replace('-', '')
         score = predictions['confidence_score'][0]
