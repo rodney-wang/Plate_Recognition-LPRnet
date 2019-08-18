@@ -1,67 +1,110 @@
 import cv2
-import random
-from scipy import ndimage
-#from skimage.transform import rotate
-#from skimage.util import random_noise
-#from skimage import exposure
 import numpy as np
+from PIL import Image, ImageFilter, ImageEnhance
 
-def random_padding(image):
-    max_pad_w = 10
-    max_pad_h = 5
 
-    w_pad = list(np.random.randint(0, max_pad_w, size=[2]))
-    h_pad = list(np.random.randint(0, max_pad_h, size=[2]))
-    paddings = [h_pad, w_pad, [0, 0]]
+scale_jitter = 0.7
+max_rotate_angle= 7.
+gaussian_blur_range = 1.
+rank_blur_range = 3 # rank filter window size
+motion_blur_range = 3
+pydown_blur_range = 0.7
+brightness_jitter = 0.1
 
-    color = [0, 0, 0]
-    new_im = cv2.copyMakeBorder(image, h_pad[0], h_pad[1],  w_pad[0], w_pad[1], cv2.BORDER_CONSTANT,
-                                value=color)
-    return new_im
+def __scale_jitter(img):
+    w, h = img.size[0], img.size[1]
+    h_scale = np.random.uniform(0.8, 1)
+    w_scale = np.random.uniform(0.5, 1)
+    nw = int(w * w_scale)
+    nh = int(h * h_scale)
+    img = img.resize((nw, nh), Image.BICUBIC)
 
-def augment_brightness(image):
-    image1 = cv2.cvtColor(image,cv2.COLOR_RGB2HSV)
-    random_bright = .25+np.random.uniform()
-    image1[:,:,2] = image1[:,:,2]*random_bright
-    image1 = cv2.cvtColor(image1, cv2.COLOR_HSV2RGB)
-    return image1
+    dx = int(np.random.uniform(0, w - nw))
+    dy = int(np.random.uniform(0, h - nh))
+    new_img = Image.new('L', (w, h), np.random.randint(0, 255))
+    new_img.paste(img, (dx, dy))
 
-def augment_brightness_camera_images(image):
-    image1 = cv2.cvtColor(image,cv2.COLOR_RGB2HSV)
-    image1 = np.array(image1, dtype = np.float64)
-    random_bright = .3+np.random.uniform()
-    image1[:,:,2] = image1[:,:,2]*random_bright
-    image1[:,:,2][image1[:,:,2]>255]  = 255
-    image1 = np.array(image1, dtype = np.uint8)
-    image1 = cv2.cvtColor(image1,cv2.COLOR_HSV2RGB)
-    return image1
+    return new_img
 
-def apply_brightness_contrast(input_img, brightness = 0, contrast = 0):
 
-    if brightness != 0:
-        if brightness > 0:
-            shadow = brightness
-            highlight = 255
-        else:
-            shadow = 0
-            highlight = 255 + brightness
-        alpha_b = (highlight - shadow)/255
-        gamma_b = shadow
+def __random_pydown_blur(img):
+    w, h = img.size[0], img.size[1]
+    h_scale = np.random.uniform(pydown_blur_range, 1)
+    w_scale = np.random.uniform(pydown_blur_range, 1)
+    nw = int(w * w_scale)
+    nh = int(h * h_scale)
+    img = img.resize((nw, nh), Image.BICUBIC)
+    img = img.resize((w, h), Image.BICUBIC)
+    return img
 
-        buf = cv2.addWeighted(input_img, alpha_b, input_img, 0, gamma_b)
+
+def __random_motion_blur(img, motion_blur_range):
+    img_array = np.array(img)
+    angle = np.random.randint(0, 360)
+    motion_blur_range = np.random.randint(2, motion_blur_range)
+    M = cv2.getRotationMatrix2D((motion_blur_range / 2, motion_blur_range / 2), angle, 1)
+    motion_blur_kernel = np.diag(np.ones(motion_blur_range))
+    motion_blur_kernel = cv2.warpAffine(motion_blur_kernel, M, (motion_blur_range, motion_blur_range))
+
+    motion_blur_kernel = motion_blur_kernel / motion_blur_range
+    img_array = cv2.filter2D(img_array, -1, motion_blur_kernel)
+
+    cv2.normalize(img_array, img_array, 0, 255, cv2.NORM_MINMAX)
+    img = Image.fromarray(img_array)
+    return img
+
+
+def __random_gaussian_blur(img):
+    blur = np.random.uniform(1, gaussian_blur_range)
+    return img.filter(ImageFilter.GaussianBlur(blur))
+
+
+def __random_rank_blur(img):
+    w, h = img.size[0], img.size[1]
+    img = img.resize((2 * w, 2 * h))
+    rank = np.random.randint(0, rank_blur_range * rank_blur_range)
+    img = img.filter(ImageFilter.RankFilter(rank_blur_range, rank))
+    img = img.resize((w, h))
+    return img
+
+
+def __random_brightness(img):
+    brightness_jitter_need = np.random.uniform(-brightness_jitter, brightness_jitter)
+    img_brightness = ImageEnhance.Brightness(img)
+    return img_brightness.enhance(1 + brightness_jitter_need)
+
+
+def __random_rotate(img, max_rotate_angle):
+    w, h = img.size[0], img.size[1]
+    max_rotate_angle = max_rotate_angle
+    angle_need = np.random.uniform(-max_rotate_angle, max_rotate_angle)
+    img = img.rotate(angle_need, expand=1)
+    img = img.resize((w, h), Image.BICUBIC)
+    return img
+
+
+def __random_blur(img):
+    k = np.random.randint(0, 4)
+    if k == 0:
+        img = __random_gaussian_blur(img)
+    elif k == 1:
+        img = __random_rank_blur(img)
+    elif k == 2:
+        img = __random_pydown_blur(img)
     else:
-        buf = input_img.copy()
+        img = __random_motion_blur(img, 3)
+    return img
 
-    if contrast != 0:
-        f = 131*(contrast + 127)/(127*(131-contrast))
-        alpha_c = f
-        gamma_c = 127*(1-f)
 
-        buf = cv2.addWeighted(buf, alpha_c, buf, 0, gamma_c)
+def __random_inverse_color(img):
+    img_array = np.array(img)
+    offset = np.random.randint(-10, 10)
+    img_reverse_array = 255 + offset - img_array
+    img = Image.fromarray(img_reverse_array)
+    return img
 
-    return buf
 
-def augment_data(image):
+def augment_data(img):
     """
     Data augmentation on an image (padding, brightness, contrast, rotation)
     :param image: Tensor
@@ -69,14 +112,18 @@ def augment_data(image):
     :return: Tensor
     """
 
-    image = random_padding(image)
-    image = augment_brightness_camera_images(image)
-    image = ndimage.rotate(image, (np.random.rand()-0.5)*8)   #random rotate -4 to 4 degree
-    if random.random()>0.8:
-        #image = 255-image
-        image = np.invert(image)
-    #image = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
-    return image
+    if np.random.random() < 0.3:
+        img = __random_blur(img)
+    if np.random.random() < 0.3:
+        img = __random_brightness(img)
+    if np.random.random() < 0.3:
+        img = __scale_jitter(img)
+    if np.random.random() < 0.3:
+        img = __random_rotate(img, max_rotate_angle)
+    if np.random.random() < 0.5:
+        img = __random_inverse_color(img)
+
+    return img
 
 
 
@@ -84,7 +131,6 @@ if __name__ == "__main__":
 
     img = cv2.imread('/Users/fei/tmp/plate.jpg')
     for i in range(10):
-        print i
         image = augment_data(img)
         cv2.imwrite('/Users/fei/tmp/aug/plate_aug'+str(i)+'.jpg', image)
 
