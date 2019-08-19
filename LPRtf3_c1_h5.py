@@ -11,10 +11,10 @@ from TextImageGeneratorH5 import TextImageGeneratorH5, sparse_tuple_from
 
 from config import CHARS, dict, CHARS_DICT, NUM_CHARS
 
-os.environ["CUDA_VISIBLE_DEVICES"]="3,5"
+os.environ["CUDA_VISIBLE_DEVICES"]="3,4"
 
 #训练最大轮次
-num_epochs = 200
+num_epochs = 300
 
 #初始化学习速率
 INITIAL_LEARNING_RATE = 1e-3
@@ -27,7 +27,7 @@ REPORT_STEPS = 5000
 
 #训练集的数量
 BATCH_SIZE = 256
-TRAIN_SIZE = 123300 
+TRAIN_SIZE = 336144 
 BATCHES = TRAIN_SIZE//BATCH_SIZE
 test_num = 3
 
@@ -196,7 +196,7 @@ def train(a):
         #print(b_cost, steps)
         if steps > 0 and steps % REPORT_STEPS == 0:
             do_report(val_gen,test_num)
-            saver.save(session, "./model_k11/LPR_k11.ckpt", global_step=steps)
+            saver.save(session, "./model_k11/LPR_k11_withsyn.ckpt", global_step=steps)
         return b_cost, steps
 
     with tf.Session() as session:
