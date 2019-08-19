@@ -28,6 +28,7 @@ class PlateOCR:
         else:
             images = img[np.newaxis, :]
 
+        images = images/255.
         images = np.transpose(images, axes=[0, 2, 1, 3])
 
         inputs = {"Placeholder": images,

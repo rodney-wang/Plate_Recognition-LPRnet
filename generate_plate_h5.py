@@ -53,7 +53,7 @@ def write_image_info_into_hdf5(file_name, data_tuple, phase):
             img = img.resize((IMAGE_WIDTH, IMAGE_HEIGHT))
             img = np.array(img)
             img = img[..., np.newaxis]
-            img = img/255.
+            #img = img/255.
             img = np.transpose(img, (2, 0, 1))
             img_data[i] = img
             #"""

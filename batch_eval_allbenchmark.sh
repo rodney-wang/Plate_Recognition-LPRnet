@@ -3,7 +3,7 @@
 LOG_FILE="./log_k11_bms.txt"
 > $LOG_FILE
 
-MODEL=./model_pb/model_k11_pb_confuse
+MODEL=./model_pb/model_k11_pb_synthetic
 #test the 4k benchmark
 echo -e "Testing 4K benchmark" | tee -a $LOG_FILE     
 python eval_lpr.py --ocr_txt /ssd/wfei/data/testing_data/k11_benchmark_ocrlabel.txt  \

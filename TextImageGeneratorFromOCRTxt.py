@@ -85,7 +85,7 @@ class TextImageGeneratorBM:
             fname = self.filenames[i]
             img = cv2.imread(fname)
             img = cv2.resize(img, (self._img_w, self._img_h), interpolation=cv2.INTER_CUBIC)
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)/255.0
             img = img[:, :, np.newaxis]
             images[j, ...] = img
         images = np.transpose(images, axes=[0, 2, 1, 3])
